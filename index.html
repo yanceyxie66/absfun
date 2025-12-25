@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>绝对值函数图象探究 | 活动一-四</title>
+  <style>
+    body{margin:0;background:#fff;color:#000;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
+    .topbar{
+      border-bottom:1px solid #bbb;
+      padding:10px 14px;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .brand{font-weight:800;}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tab{
+      border:1px solid #888;border-radius:999px;padding:6px 10px;background:#f3f3f3;cursor:pointer;
+      font-weight:700;font-size:13px;
+    }
+    .tab.active{background:#000;color:#fff;border-color:#000;}
+
+    .wrap{
+      max-width:1100px;
+      margin:12px auto;
+      padding:0 14px;
+      display:grid;
+      grid-template-columns:1.45fr .55fr;
+      gap:12px;
+      align-items:start;
+    }
+    @media (max-width:980px){.wrap{grid-template-columns:1fr;}}
+
+    .card{border:1px solid #bbb;border-radius:12px;background:#fff;padding:12px;}
+    .title{font-weight:800;margin:0 0 8px;}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;}
+    .hint{color:#333;line-height:1.55;}
+    .btn{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #888;border-radius:10px;background:#f3f3f3;cursor:pointer;
+      font-weight:800; text-align:left;
+      margin-bottom:10px;
+    }
+    .btn:hover{background:#e9e9e9;}
+    .btn.on{background:#000;color:#fff;border-color:#000;}
+    .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:8px 0;}
+    input[type=range]{width:100%;}
+    .divider{height:1px;background:#ddd;margin:10px 0;}
+    .hide{display:none !important;}
+
+    /* 默认“缩小一点”——限制 SVG 最大尺寸（打开无需缩放浏览器） */
+    .plotWrap{display:flex;justify-content:center;align-items:center;}
+    svg{
+      width:100%;
+      height:auto;
+      aspect-ratio: 1 / 1;
+      display:block;
+      border:1px solid #bbb;
+      border-radius:10px;
+      background:#fff;
+      max-width:640px;
+      max-height:640px;
+    }
+    @media (max-width:980px){ svg{max-width:560px;max-height:560px;} }
+
+    .grid{stroke:#e8e8e8;stroke-width:1}
+    .axis{stroke:#000;stroke-width:2}
+
+    /* 基准函数：虚线 */
+    .curveBase{stroke:#000;stroke-width:2.2;fill:none;stroke-dasharray:7 6;opacity:.65}
+
+    /* 叠加/目标函数：实线 */
+    .curve{stroke-width:2.8;fill:none}
+
+    /* 活动一配色 */
+    .a1_2x   {stroke:#d62828;}
+    .a1_half {stroke:#1d4ed8;}
+    .a1_neg  {stroke:#15803d;}
+    .a1_k    {stroke:#7c3aed;}
+
+    /* 活动二配色 */
+    .a2_p1 {stroke:#d62828;}
+    .a2_m1 {stroke:#1d4ed8;}
+    .a2_a  {stroke:#7c3aed;}
+
+    /* 活动三配色 */
+    .a3_up1 {stroke:#d62828;}
+    .a3_dn1 {stroke:#1d4ed8;}
+    .a3_b   {stroke:#7c3aed;}
+
+    /* 活动四配色 */
+    .a4_main {stroke:#111827;} /* 深色，保持对比清晰 */
+
+    .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .lg{display:flex;align-items:center;gap:6px;font-size:12px}
+    .sw{width:28px;height:0;border-top:3px solid #000;}
+    .sw.dash{border-top-style:dashed;opacity:.65}
+
+    .note{margin-top:10px}
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">绝对值函数图象探究</div>
+    <div class="tabs">
+      <button class="tab active" id="tab1">活动一：k</button>
+      <button class="tab" id="tab2">活动二：a</button>
+      <button class="tab" id="tab3">活动三：b</button>
+      <button class="tab" id="tab4">活动四：k,a,b</button>
+    </div>
+    <div class="mono" style="color:#333;">坐标等比例 1:1（k=1 时为 45°）</div>
+  </div>
+
+  <!-- 活动一 -->
+  <div class="wrap" id="act1">
+    <div class="card">
+      <h3 class="title">活动一：从 y=|x| 出发，观察 y=k|x| 中 k 的影响</h3>
+      <div class="mono" id="act1_eqInfo"></div>
+
+      <div class="plotWrap">
+        <svg id="act1_plot" viewBox="0 0 900 900" aria-label="活动一坐标系与函数图象">
+          <g id="act1_gridLayer"></g>
+          <g id="act1_axisLayer"></g>
+          <g id="act1_labelLayer"></g>
+
+          <path id="act1_baseCurve" class="curveBase" d=""></path>
+
+          <path id="act1_curve2" class="curve a1_2x hide" d=""></path>
+          <path id="act1_curveHalf" class="curve a1_half hide" d=""></path>
+          <path id="act1_curveNeg" class="curve a1_neg hide" d=""></path>
+          <path id="act1_curveK" class="curve a1_k hide" d=""></path>
+        </svg>
+      </div>
+
+      <div class="legend">
+        <div class="lg"><span class="sw dash"></span><span>y = |x|（虚线基准）</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#d62828;"></span><span id="act1_lg2" class="hide">y = 2|x|</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#1d4ed8;"></span><span id="act1_lgHalf" class="hide">y = 1/2|x|</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#15803d;"></span><span id="act1_lgNeg" class="hide">y = -|x|</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#7c3aed;"></span><span id="act1_lgK" class="hide">y = k|x|</span></div>
+      </div>
+
+      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
+    </div>
+
+    <div class="card">
+      <h3 class="title">操作区</h3>
+
+      <button class="btn" id="act1_btn2">显示/隐藏：y = 2|x|</button>
+      <button class="btn" id="act1_btnHalf">显示/隐藏：y = 1/2|x|</button>
+      <button class="btn" id="act1_btnNeg">显示/隐藏：y = -|x|</button>
+      <button class="btn" id="act1_btnK">进入/退出：y = k|x|（出现滑条）</button>
+
+      <div id="act1_kPanel" class="hide">
+        <div class="divider"></div>
+        <div class="row">
+          <div style="font-weight:800;">k</div>
+          <div class="mono" id="act1_kVal">1</div>
+        </div>
+        <input id="act1_k" type="range" min="-5" max="5" step="0.1" value="1" />
+        <div class="hint mono" style="margin-top:8px;">
+          拖动 k：改变“陡缓/开口方向”。坐标系固定不动。
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn" id="act1_reset">重置活动一</button>
+      <div class="hint mono" style="margin-top:10px;">重置后：只保留 y=|x|（虚线）。</div>
+    </div>
+  </div>
+
+  <!-- 活动二 -->
+  <div class="wrap hide" id="act2">
+    <div class="card">
+      <h3 class="title">活动二：从 y=|x| 出发，观察 y=|x+a| 中 a 的影响</h3>
+      <div class="mono" id="act2_eqInfo"></div>
+
+      <div class="plotWrap">
+        <svg id="act2_plot" viewBox="0 0 900 900" aria-label="活动二坐标系与函数图象">
+          <g id="act2_gridLayer"></g>
+          <g id="act2_axisLayer"></g>
+          <g id="act2_labelLayer"></g>
+
+          <path id="act2_baseCurve" class="curveBase" d=""></path>
+
+          <path id="act2_curveP1" class="curve a2_p1 hide" d=""></path>
+          <path id="act2_curveM1" class="curve a2_m1 hide" d=""></path>
+          <path id="act2_curveA"  class="curve a2_a  hide" d=""></path>
+        </svg>
+      </div>
+
+      <div class="legend">
+        <div class="lg"><span class="sw dash"></span><span>y = |x|（虚线基准）</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#d62828;"></span><span id="act2_lgP1" class="hide">y = |x+1|</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#1d4ed8;"></span><span id="act2_lgM1" class="hide">y = |x-1|</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#7c3aed;"></span><span id="act2_lgA"  class="hide">y = |x+a|</span></div>
+      </div>
+
+      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
+    </div>
+
+    <div class="card">
+      <h3 class="title">操作区</h3>
+
+      <button class="btn" id="act2_btnP1">显示/隐藏：y = |x+1|</button>
+      <button class="btn" id="act2_btnM1">显示/隐藏：y = |x-1|</button>
+      <button class="btn" id="act2_btnA">进入/退出：y = |x+a|（出现滑条）</button>
+
+      <div id="act2_aPanel" class="hide">
+        <div class="divider"></div>
+        <div class="row">
+          <div style="font-weight:800;">a</div>
+          <div class="mono" id="act2_aVal">0</div>
+        </div>
+        <input id="act2_a" type="range" min="-10" max="10" step="0.1" value="0" />
+        <div class="hint mono" style="margin-top:8px;">
+          拖动 a：改变图象左右平移（顶点横坐标为 -a）。
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn" id="act2_reset">重置活动二</button>
+      <div class="hint mono" style="margin-top:10px;">重置后：只保留 y=|x|（虚线）。</div>
+    </div>
+  </div>
+
+  <!-- 活动三 -->
+  <div class="wrap hide" id="act3">
+    <div class="card">
+      <h3 class="title">活动三：从 y=|x+1| 出发，观察 y=|x+1|+b 中 b 的影响</h3>
+      <div class="mono" id="act3_eqInfo"></div>
+
+      <div class="plotWrap">
+        <svg id="act3_plot" viewBox="0 0 900 900" aria-label="活动三坐标系与函数图象">
+          <g id="act3_gridLayer"></g>
+          <g id="act3_axisLayer"></g>
+          <g id="act3_labelLayer"></g>
+
+          <path id="act3_baseCurve" class="curveBase" d=""></path>
+
+          <path id="act3_curveUp1" class="curve a3_up1 hide" d=""></path>
+          <path id="act3_curveDn1" class="curve a3_dn1 hide" d=""></path>
+          <path id="act3_curveB"   class="curve a3_b   hide" d=""></path>
+        </svg>
+      </div>
+
+      <div class="legend">
+        <div class="lg"><span class="sw dash"></span><span>y = |x+1|（虚线基准）</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#d62828;"></span><span id="act3_lgUp1" class="hide">y = |x+1| + 1</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#1d4ed8;"></span><span id="act3_lgDn1" class="hide">y = |x+1| - 1</span></div>
+        <div class="lg"><span class="sw" style="border-top-color:#7c3aed;"></span><span id="act3_lgB"   class="hide">y = |x+1| + b</span></div>
+      </div>
+
+      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
+    </div>
+
+    <div class="card">
+      <h3 class="title">操作区</h3>
+
+      <button class="btn" id="act3_btnUp1">显示/隐藏：y = |x+1| + 1</button>
+      <button class="btn" id="act3_btnDn1">显示/隐藏：y = |x+1| - 1</button>
+      <button class="btn" id="act3_btnB">进入/退出：y = |x+1| + b（出现滑条）</button>
+
+      <div id="act3_bPanel" class="hide">
+        <div class="divider"></div>
+        <div class="row">
+          <div style="font-weight:800;">b</div>
+          <div class="mono" id="act3_bVal">0</div>
+        </div>
+        <input id="act3_b" type="range" min="-20" max="20" step="0.1" value="0" />
+        <div class="hint mono" style="margin-top:8px;">
+          拖动 b：改变图象上下平移（整体上移/下移 b 个单位）。
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn" id="act3_reset">重置活动三</button>
+      <div class="hint mono" style="margin-top:10px;">重置后：只保留 y=|x+1|（虚线）。</div>
+    </div>
+  </div>
+
+  <!-- 活动四 -->
+  <div class="wrap hide" id="act4">
+    <div class="card">
+      <h3 class="title">活动四：y = k|x+a| + b（同时拖动 k、a、b）</h3>
+      <div class="mono" id="act4_eqInfo"></div>
+
+      <div class="plotWrap">
+        <svg id="act4_plot" viewBox="0 0 900 900" aria-label="活动四坐标系与函数图象">
+          <g id="act4_gridLayer"></g>
+          <g id="act4_axisLayer"></g>
+          <g id="act4_labelLayer"></g>
+
+          <path id="act4_curve" class="curve a4_main" d=""></path>
+        </svg>
+      </div>
+
+      <div class="legend">
+        <div class="lg"><span class="sw" style="border-top-color:#111827;"></span><span>y = k|x+a| + b</span></div>
+      </div>
+
+      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
+    </div>
+
+    <div class="card">
+      <h3 class="title">参数区</h3>
+
+      <div class="row">
+        <div style="font-weight:800;">k</div>
+        <div class="mono" id="act4_kVal">1</div>
+      </div>
+      <input id="act4_k" type="range" min="-5" max="5" step="0.1" value="1" />
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div style="font-weight:800;">a</div>
+        <div class="mono" id="act4_aVal">0</div>
+      </div>
+      <input id="act4_a" type="range" min="-10" max="10" step="0.1" value="0" />
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div style="font-weight:800;">b</div>
+        <div class="mono" id="act4_bVal">0</div>
+      </div>
+      <input id="act4_b" type="range" min="-20" max="20" step="0.1" value="0" />
+
+      <div class="divider"></div>
+      <button class="btn" id="act4_reset">重置活动四（k=1,a=0,b=0）</button>
+
+      <div class="hint mono" style="margin-top:10px;">
+        说明：活动四坐标窗与活动一一致（范围较大），便于观察 k,a,b 的综合影响。
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ---------------------------
+  // Tabs
+  // ---------------------------
+  const tab1 = document.getElementById('tab1');
+  const tab2 = document.getElementById('tab2');
+  const tab3 = document.getElementById('tab3');
+  const tab4 = document.getElementById('tab4');
+
+  const act1 = document.getElementById('act1');
+  const act2 = document.getElementById('act2');
+  const act3 = document.getElementById('act3');
+  const act4 = document.getElementById('act4');
+
+  function setTab(n){
+    [tab1,tab2,tab3,tab4].forEach(t=>t.classList.remove('active'));
+    [act1,act2,act3,act4].forEach(a=>a.classList.add('hide'));
+    if(n===1){ tab1.classList.add('active'); act1.classList.remove('hide'); }
+    if(n===2){ tab2.classList.add('active'); act2.classList.remove('hide'); }
+    if(n===3){ tab3.classList.add('active'); act3.classList.remove('hide'); }
+    if(n===4){ tab4.classList.add('active'); act4.classList.remove('hide'); }
+  }
+  tab1.addEventListener('click', ()=>setTab(1));
+  tab2.addEventListener('click', ()=>setTab(2));
+  tab3.addEventListener('click', ()=>setTab(3));
+  tab4.addEventListener('click', ()=>setTab(4));
+
+  // ---------------------------
+  // Shared plot helpers (1:1)
+  // ---------------------------
+  const W=900, H=900, M=70;
+  const PW=W-2*M, PH=H-2*M;
+
+  // 视窗：活动一&四范围较大；活动二/三放大显示（范围更小）
+  const A1  = { xMin:-40, xMax:40, yMin:-40, yMax:40 };
+  const A23 = { xMin:-12, xMax:12, yMin:-12, yMax:12 };
+
+  function w2s(x, y, win){
+    const sx = M + (x - win.xMin) / (win.xMax - win.xMin) * PW;
+    const sy = M + (win.yMax - y) / (win.yMax - win.yMin) * PH;
+    return [sx, sy];
+  }
+
+  function niceStep(range){
+    const rough = range/8;
+    const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+    const n = rough/pow;
+    if(n<1.5) return 1*pow;
+    if(n<3) return 2*pow;
+    if(n<7) return 5*pow;
+    return 10*pow;
+  }
+
+  function clearLayer(g){ while(g.firstChild) g.removeChild(g.firstChild); }
+
+  function svgLine(x1,y1,x2,y2, cls){
+    const ln = document.createElementNS("http://www.w3.org/2000/svg","line");
+    ln.setAttribute("x1", x1); ln.setAttribute("y1", y1);
+    ln.setAttribute("x2", x2); ln.setAttribute("y2", y2);
+    ln.setAttribute("class", cls);
+    return ln;
+  }
+
+  function drawGridAxes(gridLayer, axisLayer, win){
+    clearLayer(gridLayer);
+    clearLayer(axisLayer);
+
+    const stepX = niceStep(win.xMax - win.xMin);
+    const stepY = niceStep(win.yMax - win.yMin);
+
+    for(let x=Math.ceil(win.xMin/stepX)*stepX; x<=win.xMax; x+=stepX){
+      const [sx] = w2s(x,0,win);
+      gridLayer.appendChild(svgLine(sx, M, sx, H-M, "grid"));
+    }
+    for(let y=Math.ceil(win.yMin/stepY)*stepY; y<=win.yMax; y+=stepY){
+      const [,sy] = w2s(0,y,win);
+      gridLayer.appendChild(svgLine(M, sy, W-M, sy, "grid"));
+    }
+
+    const [x0,y0] = w2s(0,0,win);
+    axisLayer.appendChild(svgLine(x0, M, x0, H-M, "axis"));
+    axisLayer.appendChild(svgLine(M, y0, W-M, y0, "axis"));
+  }
+
+  // 坐标轴标注：x、y、O
+  function drawAxisLabels(labelLayer, win){
+    clearLayer(labelLayer);
+
+    const [x0, y0] = w2s(0,0,win);
+
+    const O = document.createElementNS("http://www.w3.org/2000/svg","text");
+    O.setAttribute("x", x0 + 6);
+    O.setAttribute("y", y0 - 6);
+    O.setAttribute("font-size", "16");
+    O.setAttribute("font-weight", "800");
+    O.textContent = "O";
+    labelLayer.appendChild(O);
+
+    const [xEnd, yAxis] = w2s(win.xMax, 0, win);
+    const xl = document.createElementNS("http://www.w3.org/2000/svg","text");
+    xl.setAttribute("x", xEnd - 10);
+    xl.setAttribute("y", yAxis - 10);
+    xl.setAttribute("font-size", "16");
+    xl.setAttribute("font-weight", "800");
+    xl.textContent = "x";
+    labelLayer.appendChild(xl);
+
+    const [xAxis, yEnd] = w2s(0, win.yMax, win);
+    const yl = document.createElementNS("http://www.w3.org/2000/svg","text");
+    yl.setAttribute("x", xAxis + 10);
+    yl.setAttribute("y", yEnd + 18);
+    yl.setAttribute("font-size", "16");
+    yl.setAttribute("font-weight", "800");
+    yl.textContent = "y";
+    labelLayer.appendChild(yl);
+  }
+
+  function fmt(n){
+    const s = (Math.round(n*10)/10).toFixed(1);
+    return s.replace(/\.0$/,'');
+  }
+
+  function pathFromFunc(func, win){
+    const N=1200;
+    let d="";
+    for(let i=0;i<=N;i++){
+      const x = win.xMin + (win.xMax-win.xMin)*i/N;
+      const y = func(x);
+      const [sx,sy] = w2s(x,y,win);
+      d += (i===0 ? `M ${sx.toFixed(2)} ${sy.toFixed(2)}` : ` L ${sx.toFixed(2)} ${sy.toFixed(2)}`);
+    }
+    return d;
+  }
+
+  function setOnOff(btn, on){
+    if(on) btn.classList.add('on');
+    else btn.classList.remove('on');
+  }
+
+  function toggleCurve(btn, curveEl, legendEl){
+    const isOn = !curveEl.classList.contains('hide');
+    if(isOn){
+      curveEl.classList.add('hide');
+      legendEl.classList.add('hide');
+      setOnOff(btn,false);
+    }else{
+      curveEl.classList.remove('hide');
+      legendEl.classList.remove('hide');
+      setOnOff(btn,true);
+    }
+  }
+
+  // ---------------------------
+  // Activity 1 (k) : use A1
+  // ---------------------------
+  (function initAct1(){
+    const win = A1;
+
+    const gridLayer = document.getElementById('act1_gridLayer');
+    const axisLayer = document.getElementById('act1_axisLayer');
+    const labelLayer = document.getElementById('act1_labelLayer');
+
+    const baseCurve = document.getElementById('act1_baseCurve');
+    const curve2 = document.getElementById('act1_curve2');
+    const curveHalf = document.getElementById('act1_curveHalf');
+    const curveNeg = document.getElementById('act1_curveNeg');
+    const curveK = document.getElementById('act1_curveK');
+
+    const eqInfo = document.getElementById('act1_eqInfo');
+
+    const btn2 = document.getElementById('act1_btn2');
+    const btnHalf = document.getElementById('act1_btnHalf');
+    const btnNeg = document.getElementById('act1_btnNeg');
+    const btnK = document.getElementById('act1_btnK');
+    const resetBtn = document.getElementById('act1_reset');
+
+    const kPanel = document.getElementById('act1_kPanel');
+    const kEl = document.getElementById('act1_k');
+    const kVal = document.getElementById('act1_kVal');
+
+    const lg2 = document.getElementById('act1_lg2');
+    const lgHalf = document.getElementById('act1_lgHalf');
+    const lgNeg = document.getElementById('act1_lgNeg');
+    const lgK = document.getElementById('act1_lgK');
+
+    drawGridAxes(gridLayer, axisLayer, win);
+    drawAxisLabels(labelLayer, win);
+
+    baseCurve.setAttribute('d', pathFromFunc(x => Math.abs(x), win));
+    curve2.setAttribute('d', pathFromFunc(x => 2*Math.abs(x), win));
+    curveHalf.setAttribute('d', pathFromFunc(x => 0.5*Math.abs(x), win));
+    curveNeg.setAttribute('d', pathFromFunc(x => -1*Math.abs(x), win));
+    curveK.setAttribute('d', pathFromFunc(x => parseFloat(kEl.value)*Math.abs(x), win));
+
+    function updateEq(){
+      const parts = [`基准：y = |x|（虚线）`];
+      if(!curve2.classList.contains('hide')) parts.push(`叠加：y = 2|x|`);
+      if(!curveHalf.classList.contains('hide')) parts.push(`叠加：y = 1/2|x|`);
+      if(!curveNeg.classList.contains('hide')) parts.push(`叠加：y = -|x|`);
+      if(!curveK.classList.contains('hide')) parts.push(`叠加：y = ${fmt(parseFloat(kEl.value))}|x|`);
+      eqInfo.textContent = parts.join("    |    ");
+    }
+
+    btn2.addEventListener('click', ()=>{ toggleCurve(btn2, curve2, lg2); updateEq(); });
+    btnHalf.addEventListener('click', ()=>{ toggleCurve(btnHalf, curveHalf, lgHalf); updateEq(); });
+    btnNeg.addEventListener('click', ()=>{ toggleCurve(btnNeg, curveNeg, lgNeg); updateEq(); });
+
+    btnK.addEventListener('click', ()=>{
+      const on = !curveK.classList.contains('hide');
+      if(on){
+        curveK.classList.add('hide');
+        lgK.classList.add('hide');
+        setOnOff(btnK,false);
+        kPanel.classList.add('hide');
+      }else{
+        curveK.classList.remove('hide');
+        lgK.classList.remove('hide');
+        setOnOff(btnK,true);
+        kPanel.classList.remove('hide');
+        curveK.setAttribute('d', pathFromFunc(x => parseFloat(kEl.value)*Math.abs(x), win));
+      }
+      updateEq();
+    });
+
+    kEl.addEventListener('input', ()=>{
+      const k = parseFloat(kEl.value);
+      kVal.textContent = fmt(k);
+      if(!curveK.classList.contains('hide')){
+        curveK.setAttribute('d', pathFromFunc(x => k*Math.abs(x), win));
+      }
+      updateEq();
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      curve2.classList.add('hide'); lg2.classList.add('hide'); setOnOff(btn2,false);
+      curveHalf.classList.add('hide'); lgHalf.classList.add('hide'); setOnOff(btnHalf,false);
+      curveNeg.classList.add('hide'); lgNeg.classList.add('hide'); setOnOff(btnNeg,false);
+      curveK.classList.add('hide'); lgK.classList.add('hide'); setOnOff(btnK,false);
+      kPanel.classList.add('hide');
+
+      kEl.value = 1; kVal.textContent = "1";
+      curveK.setAttribute('d', pathFromFunc(x => 1*Math.abs(x), win));
+      updateEq();
+    });
+
+    updateEq();
+  })();
+
+  // ---------------------------
+  // Activity 2 (a) : use A23 (zoom in)
+  // ---------------------------
+  (function initAct2(){
+    const win = A23;
+
+    const gridLayer = document.getElementById('act2_gridLayer');
+    const axisLayer = document.getElementById('act2_axisLayer');
+    const labelLayer = document.getElementById('act2_labelLayer');
+
+    const baseCurve = document.getElementById('act2_baseCurve');
+    const curveP1 = document.getElementById('act2_curveP1');
+    const curveM1 = document.getElementById('act2_curveM1');
+    const curveA  = document.getElementById('act2_curveA');
+
+    const eqInfo = document.getElementById('act2_eqInfo');
+
+    const btnP1 = document.getElementById('act2_btnP1');
+    const btnM1 = document.getElementById('act2_btnM1');
+    const btnA  = document.getElementById('act2_btnA');
+    const resetBtn = document.getElementById('act2_reset');
+
+    const aPanel = document.getElementById('act2_aPanel');
+    const aEl = document.getElementById('act2_a');
+    const aVal = document.getElementById('act2_aVal');
+
+    const lgP1 = document.getElementById('act2_lgP1');
+    const lgM1 = document.getElementById('act2_lgM1');
+    const lgA  = document.getElementById('act2_lgA');
+
+    drawGridAxes(gridLayer, axisLayer, win);
+    drawAxisLabels(labelLayer, win);
+
+    baseCurve.setAttribute('d', pathFromFunc(x => Math.abs(x), win));
+    curveP1.setAttribute('d', pathFromFunc(x => Math.abs(x+1), win));
+    curveM1.setAttribute('d', pathFromFunc(x => Math.abs(x-1), win));
+    curveA.setAttribute('d',  pathFromFunc(x => Math.abs(x + parseFloat(aEl.value)), win));
+
+    function updateEq(){
+      const parts = [`基准：y = |x|（虚线）`];
+      if(!curveP1.classList.contains('hide')) parts.push(`叠加：y = |x+1|`);
+      if(!curveM1.classList.contains('hide')) parts.push(`叠加：y = |x-1|`);
+      if(!curveA.classList.contains('hide'))  parts.push(`叠加：y = |x+${fmt(parseFloat(aEl.value))}|`);
+      eqInfo.textContent = parts.join("    |    ");
+    }
+
+    btnP1.addEventListener('click', ()=>{ toggleCurve(btnP1, curveP1, lgP1); updateEq(); });
+    btnM1.addEventListener('click', ()=>{ toggleCurve(btnM1, curveM1, lgM1); updateEq(); });
+
+    btnA.addEventListener('click', ()=>{
+      const on = !curveA.classList.contains('hide');
+      if(on){
+        curveA.classList.add('hide'); lgA.classList.add('hide'); setOnOff(btnA,false); aPanel.classList.add('hide');
+      }else{
+        curveA.classList.remove('hide'); lgA.classList.remove('hide'); setOnOff(btnA,true); aPanel.classList.remove('hide');
+        curveA.setAttribute('d', pathFromFunc(x => Math.abs(x + parseFloat(aEl.value)), win));
+      }
+      updateEq();
+    });
+
+    aEl.addEventListener('input', ()=>{
+      const a = parseFloat(aEl.value);
+      aVal.textContent = fmt(a);
+      if(!curveA.classList.contains('hide')){
+        curveA.setAttribute('d', pathFromFunc(x => Math.abs(x + a), win));
+      }
+      updateEq();
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      curveP1.classList.add('hide'); lgP1.classList.add('hide'); setOnOff(btnP1,false);
+      curveM1.classList.add('hide'); lgM1.classList.add('hide'); setOnOff(btnM1,false);
+      curveA.classList.add('hide');  lgA.classList.add('hide');  setOnOff(btnA,false);
+      aPanel.classList.add('hide');
+
+      aEl.value = 0; aVal.textContent = "0";
+      curveA.setAttribute('d', pathFromFunc(x => Math.abs(x), win));
+      updateEq();
+    });
+
+    updateEq();
+  })();
+
+  // ---------------------------
+  // Activity 3 (b) : use A23 (zoom in)
+  // ---------------------------
+  (function initAct3(){
+    const win = A23;
+
+    const gridLayer = document.getElementById('act3_gridLayer');
+    const axisLayer = document.getElementById('act3_axisLayer');
+    const labelLayer = document.getElementById('act3_labelLayer');
+
+    const baseCurve = document.getElementById('act3_baseCurve');
+    const curveUp1 = document.getElementById('act3_curveUp1');
+    const curveDn1 = document.getElementById('act3_curveDn1');
+    const curveB   = document.getElementById('act3_curveB');
+
+    const eqInfo = document.getElementById('act3_eqInfo');
+
+    const btnUp1 = document.getElementById('act3_btnUp1');
+    const btnDn1 = document.getElementById('act3_btnDn1');
+    const btnB   = document.getElementById('act3_btnB');
+    const resetBtn = document.getElementById('act3_reset');
+
+    const bPanel = document.getElementById('act3_bPanel');
+    const bEl = document.getElementById('act3_b');
+    const bVal = document.getElementById('act3_bVal');
+
+    const lgUp1 = document.getElementById('act3_lgUp1');
+    const lgDn1 = document.getElementById('act3_lgDn1');
+    const lgB   = document.getElementById('act3_lgB');
+
+    drawGridAxes(gridLayer, axisLayer, win);
+    drawAxisLabels(labelLayer, win);
+
+    baseCurve.setAttribute('d', pathFromFunc(x => Math.abs(x+1), win));
+    curveUp1.setAttribute('d', pathFromFunc(x => Math.abs(x+1) + 1, win));
+    curveDn1.setAttribute('d', pathFromFunc(x => Math.abs(x+1) - 1, win));
+    curveB.setAttribute('d',   pathFromFunc(x => Math.abs(x+1) + parseFloat(bEl.value), win));
+
+    function updateEq(){
+      const parts = [`基准：y = |x+1|（虚线）`];
+      if(!curveUp1.classList.contains('hide')) parts.push(`叠加：y = |x+1| + 1`);
+      if(!curveDn1.classList.contains('hide')) parts.push(`叠加：y = |x+1| - 1`);
+      if(!curveB.classList.contains('hide'))   parts.push(`叠加：y = |x+1| + ${fmt(parseFloat(bEl.value))}`);
+      eqInfo.textContent = parts.join("    |    ");
+    }
+
+    btnUp1.addEventListener('click', ()=>{ toggleCurve(btnUp1, curveUp1, lgUp1); updateEq(); });
+    btnDn1.addEventListener('click', ()=>{ toggleCurve(btnDn1, curveDn1, lgDn1); updateEq(); });
+
+    btnB.addEventListener('click', ()=>{
+      const on = !curveB.classList.contains('hide');
+      if(on){
+        curveB.classList.add('hide'); lgB.classList.add('hide'); setOnOff(btnB,false); bPanel.classList.add('hide');
+      }else{
+        curveB.classList.remove('hide'); lgB.classList.remove('hide'); setOnOff(btnB,true); bPanel.classList.remove('hide');
+        curveB.setAttribute('d', pathFromFunc(x => Math.abs(x+1) + parseFloat(bEl.value), win));
+      }
+      updateEq();
+    });
+
+    bEl.addEventListener('input', ()=>{
+      const b = parseFloat(bEl.value);
+      bVal.textContent = fmt(b);
+      if(!curveB.classList.contains('hide')){
+        curveB.setAttribute('d', pathFromFunc(x => Math.abs(x+1) + b, win));
+      }
+      updateEq();
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      curveUp1.classList.add('hide'); lgUp1.classList.add('hide'); setOnOff(btnUp1,false);
+      curveDn1.classList.add('hide'); lgDn1.classList.add('hide'); setOnOff(btnDn1,false);
+      curveB.classList.add('hide');   lgB.classList.add('hide');   setOnOff(btnB,false);
+      bPanel.classList.add('hide');
+
+      bEl.value = 0; bVal.textContent = "0";
+      curveB.setAttribute('d', pathFromFunc(x => Math.abs(x+1), win));
+      updateEq();
+    });
+
+    updateEq();
+  })();
+
+  // ---------------------------
+  // Activity 4 (k,a,b) : use A1
+  // ---------------------------
+  (function initAct4(){
+    const win = A1;
+
+    const gridLayer = document.getElementById('act4_gridLayer');
+    const axisLayer = document.getElementById('act4_axisLayer');
+    const labelLayer = document.getElementById('act4_labelLayer');
+
+    const curve = document.getElementById('act4_curve');
+    const eqInfo = document.getElementById('act4_eqInfo');
+
+    const kEl = document.getElementById('act4_k');
+    const aEl = document.getElementById('act4_a');
+    const bEl = document.getElementById('act4_b');
+
+    const kVal = document.getElementById('act4_kVal');
+    const aVal = document.getElementById('act4_aVal');
+    const bVal = document.getElementById('act4_bVal');
+
+    const resetBtn = document.getElementById('act4_reset');
+
+    drawGridAxes(gridLayer, axisLayer, win);
+    drawAxisLabels(labelLayer, win);
+
+    function eqString(k,a,b){
+      const inside = (a>=0) ? `x+${fmt(a)}` : `x${fmt(a)}`;
+      const bPart = (b>=0) ? `+${fmt(b)}` : `${fmt(b)}`;
+      return `y = ${fmt(k)}|${inside}| ${bPart}`;
+    }
+
+    function render(){
+      const k = parseFloat(kEl.value);
+      const a = parseFloat(aEl.value);
+      const b = parseFloat(bEl.value);
+
+      kVal.textContent = fmt(k);
+      aVal.textContent = fmt(a);
+      bVal.textContent = fmt(b);
+
+      eqInfo.textContent = eqString(k,a,b);
+
+      curve.setAttribute('d', pathFromFunc(x => k*Math.abs(x + a) + b, win));
+    }
+
+    [kEl,aEl,bEl].forEach(el => el.addEventListener('input', render));
+
+    resetBtn.addEventListener('click', ()=>{
+      kEl.value = 1; aEl.value = 0; bEl.value = 0;
+      render();
+    });
+
+    render();
+  })();
+
+})();
+</script>
+
+</body>
+</html>
