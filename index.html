@@ -1,815 +1,1776 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>绝对值函数图象探究 | 活动一-四</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>函数学习与 Logo 设计（活动一 + 活动二）</title>
   <style>
-    body{margin:0;background:#fff;color:#000;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
-    .topbar{
-      border-bottom:1px solid #bbb;
-      padding:10px 14px;
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    :root{
+      --bg:#f6f7fb;
+      --panel:#ffffff;
+      --ink:#111;
+      --muted:#666;
+      --grid:#e6e6e6;
+      --axis:#000;
+      --shadow: 0 8px 24px rgba(0,0,0,.08);
+      --radius: 14px;
+      --btn:#111;
+      --btn2:#2b2b2b;
+      --danger:#b00020;
+      --ok:#0b7a2a;
+      --warn:#a06100;
     }
-    .brand{font-weight:800;}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header{
+      padding: 12px 18px 10px 18px;
+      border-bottom: 1px solid #e9e9ee;
+      background: #fff;
+      position: sticky;
+      top:0;
+      z-index:10;
+    }
+    header .topline{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    header .title{ font-size: 18px; font-weight: 800; letter-spacing: .2px; }
+    header .subtitle{ margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+    .tabbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
     .tab{
-      border:1px solid #888;border-radius:999px;padding:6px 10px;background:#f3f3f3;cursor:pointer;
-      font-weight:700;font-size:13px;
+      border: 1px solid #d8d8e2;
+      background: #fff;
+      color: var(--ink);
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size: 13px;
+      user-select:none;
     }
-    .tab.active{background:#000;color:#fff;border-color:#000;}
+    .tab.active{
+      border-color: rgba(0,0,0,.35);
+      background: #111;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .page{
+      display:none;
+      padding: 14px;
+    }
+    .page.active{ display:block; }
 
     .wrap{
-      max-width:1100px;
-      margin:12px auto;
-      padding:0 14px;
-      display:grid;
-      grid-template-columns:1.45fr .55fr;
-      gap:12px;
-      align-items:start;
+      display:flex;
+      gap:14px;
+      align-items: stretch;
+      min-height: calc(100vh - 132px);
     }
-    @media (max-width:980px){.wrap{grid-template-columns:1fr;}}
 
-    .card{border:1px solid #bbb;border-radius:12px;background:#fff;padding:12px;}
-    .title{font-weight:800;margin:0 0 8px;}
-    .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;}
-    .hint{color:#333;line-height:1.55;}
+    .left{
+      flex: 0 0 70%;
+      min-width: 560px;
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display:flex;
+      flex-direction: column;
+    }
+    .canvasBar{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap:10px;
+      padding: 6px 4px 10px 4px;
+      flex-wrap: wrap;
+    }
+    .canvasBar .group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
     .btn{
-      width:100%;
-      padding:10px 12px;
-      border:1px solid #888;border-radius:10px;background:#f3f3f3;cursor:pointer;
-      font-weight:800; text-align:left;
-      margin-bottom:10px;
+      appearance:none;
+      border:none;
+      background: var(--btn);
+      color:#fff;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 13px;
+      cursor:pointer;
+      user-select:none;
     }
-    .btn:hover{background:#e9e9e9;}
-    .btn.on{background:#000;color:#fff;border-color:#000;}
-    .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:8px 0;}
-    input[type=range]{width:100%;}
-    .divider{height:1px;background:#ddd;margin:10px 0;}
-    .hide{display:none !important;}
+    .btn.secondary{ background: var(--btn2); }
+    .btn.ghost{
+      background: transparent;
+      border: 1px solid #d8d8e2;
+      color: var(--ink);
+    }
+    .btn.danger{ background: var(--danger); }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size: 13px;
+      color: var(--ink);
+      user-select:none;
+    }
+    .toggle input{ transform: translateY(1px); }
 
-    /* 默认“缩小一点”——限制 SVG 最大尺寸（打开无需缩放浏览器） */
-    .plotWrap{display:flex;justify-content:center;align-items:center;}
-    svg{
+    canvas.stage{
       width:100%;
-      height:auto;
-      aspect-ratio: 1 / 1;
+      flex: 1 1 auto;
+      min-height: 640px;
+      border: 1px solid #ececf3;
+      border-radius: 12px;
+      background: #fff;
       display:block;
-      border:1px solid #bbb;
-      border-radius:10px;
-      background:#fff;
-      max-width:640px;
-      max-height:640px;
+      touch-action: none;
     }
-    @media (max-width:980px){ svg{max-width:560px;max-height:560px;} }
 
-    .grid{stroke:#e8e8e8;stroke-width:1}
-    .axis{stroke:#000;stroke-width:2}
+    .right{
+      flex: 1 1 30%;
+      min-width: 360px;
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow:auto;
+    }
 
-    /* 基准函数：虚线 */
-    .curveBase{stroke:#000;stroke-width:2.2;fill:none;stroke-dasharray:7 6;opacity:.65}
+    .hintBox{
+      border: 1px dashed #d8d8e2;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fcfcff;
+    }
+    .hintBox .hintTitle{ font-weight: 800; font-size: 13px; margin-bottom: 6px; }
+    .hintBox .hintText{ font-size: 12px; color: var(--muted); line-height: 1.55; }
 
-    /* 叠加/目标函数：实线 */
-    .curve{stroke-width:2.8;fill:none}
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap:10px;
+      margin-top: 10px;
+    }
+    .row label{ font-size: 12px; color: var(--ink); min-width: 84px; }
+    .row .val{ font-size: 12px; color: var(--muted); min-width: 60px; text-align:right; }
+    .row .ctrl{ flex: 1 1 auto; display:flex; gap:8px; align-items:center; }
+    input[type="range"]{ width: 100%; }
+    input[type="number"]{
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #dfe0ea;
+      border-radius: 10px;
+      font-size: 13px;
+      outline:none;
+    }
+    .small{ font-size: 12px; color: var(--muted); }
 
-    /* 活动一配色 */
-    .a1_2x   {stroke:#d62828;}
-    .a1_half {stroke:#1d4ed8;}
-    .a1_neg  {stroke:#15803d;}
-    .a1_k    {stroke:#7c3aed;}
+    /* 活动二卡片样式（沿用） */
+    .statusRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .badge{
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #e2e2ea;
+      background: #fff;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .badge.ok{ border-color: rgba(11,122,42,.35); color: var(--ok); }
+    .badge.warn{ border-color: rgba(160,97,0,.35); color: var(--warn); }
 
-    /* 活动二配色 */
-    .a2_p1 {stroke:#d62828;}
-    .a2_m1 {stroke:#1d4ed8;}
-    .a2_a  {stroke:#7c3aed;}
+    .topActions{ display:flex; gap:10px; flex-wrap: wrap; }
 
-    /* 活动三配色 */
-    .a3_up1 {stroke:#d62828;}
-    .a3_dn1 {stroke:#1d4ed8;}
-    .a3_b   {stroke:#7c3aed;}
+    .panelSectionTitle{ margin-top: 4px; font-size: 13px; font-weight: 800; }
 
-    /* 活动四配色 */
-    .a4_main {stroke:#111827;} /* 深色，保持对比清晰 */
+    .cards{ display:flex; flex-direction: column; gap: 10px; }
 
-    .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
-    .lg{display:flex;align-items:center;gap:6px;font-size:12px}
-    .sw{width:28px;height:0;border-top:3px solid #000;}
-    .sw.dash{border-top-style:dashed;opacity:.65}
+    .card{
+      border: 1px solid #e7e7ef;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+    }
+    .cardHeader{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap:10px;
+    }
+    .cardTitle{ font-weight: 800; font-size: 13px; line-height: 1.35; }
+    .expr{ font-size: 12px; color: var(--muted); margin-top: 4px; word-break: break-word; }
 
-    .note{margin-top:10px}
+    .cardOps{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .miniBtn{
+      border: 1px solid #d8d8e2;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 9px;
+      padding: 6px 9px;
+      font-size: 12px;
+      cursor:pointer;
+    }
+    .miniBtn.danger{ border-color: rgba(176,0,32,.35); color: var(--danger); }
+    .miniBtn.primary{ border-color: rgba(0,0,0,.25); font-weight: 700; }
+
+    .domainGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top: 8px;
+    }
+    .domainGrid .field label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .domainGrid .field .pair{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .emptyTip{
+      border: 1px dashed #d8d8e2;
+      border-radius: 12px;
+      padding: 10px;
+      background:#fff;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .colorDot{
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display:inline-block;
+      transform: translateY(1px);
+      margin-right: 6px;
+      border:1px solid rgba(0,0,0,.12);
+    }
+
+    @media (max-width: 1100px){
+      .wrap{ flex-direction: column; }
+      .left, .right{ flex: 1 1 auto; min-width: unset; }
+      .left{ min-height: 55vh; }
+      canvas.stage{ min-height: 55vh; }
+    }
   </style>
 </head>
 <body>
-
-  <div class="topbar">
-    <div class="brand">绝对值函数图象探究</div>
-    <div class="tabs">
-      <button class="tab active" id="tab1">活动一：k</button>
-      <button class="tab" id="tab2">活动二：a</button>
-      <button class="tab" id="tab3">活动三：b</button>
-      <button class="tab" id="tab4">活动四：k,a,b</button>
+<header>
+  <div class="topline">
+    <div>
+      <div class="title">函数学习与 Logo 设计（活动一 + 活动二）</div>
+      <div class="subtitle">
+        活动一：观察 y=|x| 与 y=|x+a| 的左右平移关系。<br/>
+        活动二：函数 Logo 设计工作台（可拖动曲线与端点裁剪定义域，可隐藏坐标系）。
+      </div>
     </div>
-    <div class="mono" style="color:#333;">坐标等比例 1:1（k=1 时为 45°）</div>
   </div>
 
-  <!-- 活动一 -->
-  <div class="wrap" id="act1">
-    <div class="card">
-      <h3 class="title">活动一：从 y=|x| 出发，观察 y=k|x| 中 k 的影响</h3>
-      <div class="mono" id="act1_eqInfo"></div>
+  <div class="tabbar">
+    <button class="tab active" id="tabAct1">活动一：观察 |x+a|</button>
+    <button class="tab" id="tabAct2">活动二：函数 Logo 设计工作台</button>
+  </div>
+</header>
 
-      <div class="plotWrap">
-        <svg id="act1_plot" viewBox="0 0 900 900" aria-label="活动一坐标系与函数图象">
-          <g id="act1_gridLayer"></g>
-          <g id="act1_axisLayer"></g>
-          <g id="act1_labelLayer"></g>
+<!-- 活动一 -->
+<section class="page active" id="pageAct1">
+  <div class="wrap">
+    <section class="left">
+      <div class="canvasBar">
+        <div class="group">
+          <button class="btn ghost" id="a1ResetViewBtn">重置视图</button>
+          <button class="btn ghost" id="a1ToggleAxesBtn">隐藏坐标系</button>
+          <label class="toggle">
+            <input type="checkbox" id="a1GridToggle" checked />
+            显示网格
+          </label>
+        </div>
+        <div class="group small">
+          视窗：x∈[<span id="a1vxMin">-10</span>, <span id="a1vxMax">10</span>]，
+          y∈[<span id="a1vyMin">-10</span>, <span id="a1vyMax">10</span>]
+        </div>
+      </div>
+      <canvas class="stage" id="a1Stage"></canvas>
+    </section>
 
-          <path id="act1_baseCurve" class="curveBase" d=""></path>
-
-          <path id="act1_curve2" class="curve a1_2x hide" d=""></path>
-          <path id="act1_curveHalf" class="curve a1_half hide" d=""></path>
-          <path id="act1_curveNeg" class="curve a1_neg hide" d=""></path>
-          <path id="act1_curveK" class="curve a1_k hide" d=""></path>
-        </svg>
+    <aside class="right">
+      <div class="hintBox">
+        <div class="hintTitle">观察任务</div>
+        <div class="hintText">
+          画布中灰色虚线为基准函数 y=|x|。拖动参数 a，观察 y=|x+a| 的图象如何变化，并用“左右平移”语言描述规律。<br/>
+          提示：顶点位置与对称轴会随 a 改变。
+        </div>
       </div>
 
-      <div class="legend">
-        <div class="lg"><span class="sw dash"></span><span>y = |x|（虚线基准）</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#d62828;"></span><span id="act1_lg2" class="hide">y = 2|x|</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#1d4ed8;"></span><span id="act1_lgHalf" class="hide">y = 1/2|x|</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#15803d;"></span><span id="act1_lgNeg" class="hide">y = -|x|</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#7c3aed;"></span><span id="act1_lgK" class="hide">y = k|x|</span></div>
-      </div>
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <div class="cardTitle"><span class="colorDot" style="background:#1f77b4;"></span>y = |x + a|（可调）</div>
+            <div class="expr" id="a1Expr">y = |x + 0|</div>
+          </div>
+        </div>
 
-      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
-    </div>
-
-    <div class="card">
-      <h3 class="title">操作区</h3>
-
-      <button class="btn" id="act1_btn2">显示/隐藏：y = 2|x|</button>
-      <button class="btn" id="act1_btnHalf">显示/隐藏：y = 1/2|x|</button>
-      <button class="btn" id="act1_btnNeg">显示/隐藏：y = -|x|</button>
-      <button class="btn" id="act1_btnK">进入/退出：y = k|x|（出现滑条）</button>
-
-      <div id="act1_kPanel" class="hide">
-        <div class="divider"></div>
         <div class="row">
-          <div style="font-weight:800;">k</div>
-          <div class="mono" id="act1_kVal">1</div>
+          <label>a：</label>
+          <div class="ctrl">
+            <input type="range" id="a1ASlider" min="-10" max="10" step="0.5" value="0">
+            <input type="number" id="a1ANum" min="-10" max="10" step="0.5" value="0" style="max-width:110px;">
+          </div>
+          <span class="val" id="a1AVal">0</span>
         </div>
-        <input id="act1_k" type="range" min="-5" max="5" step="0.1" value="1" />
-        <div class="hint mono" style="margin-top:8px;">
-          拖动 k：改变“陡缓/开口方向”。坐标系固定不动。
-        </div>
-      </div>
 
-      <div class="divider"></div>
-      <button class="btn" id="act1_reset">重置活动一</button>
-      <div class="hint mono" style="margin-top:10px;">重置后：只保留 y=|x|（虚线）。</div>
-    </div>
-  </div>
-
-  <!-- 活动二 -->
-  <div class="wrap hide" id="act2">
-    <div class="card">
-      <h3 class="title">活动二：从 y=|x| 出发，观察 y=|x+a| 中 a 的影响</h3>
-      <div class="mono" id="act2_eqInfo"></div>
-
-      <div class="plotWrap">
-        <svg id="act2_plot" viewBox="0 0 900 900" aria-label="活动二坐标系与函数图象">
-          <g id="act2_gridLayer"></g>
-          <g id="act2_axisLayer"></g>
-          <g id="act2_labelLayer"></g>
-
-          <path id="act2_baseCurve" class="curveBase" d=""></path>
-
-          <path id="act2_curveP1" class="curve a2_p1 hide" d=""></path>
-          <path id="act2_curveM1" class="curve a2_m1 hide" d=""></path>
-          <path id="act2_curveA"  class="curve a2_a  hide" d=""></path>
-        </svg>
-      </div>
-
-      <div class="legend">
-        <div class="lg"><span class="sw dash"></span><span>y = |x|（虚线基准）</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#d62828;"></span><span id="act2_lgP1" class="hide">y = |x+1|</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#1d4ed8;"></span><span id="act2_lgM1" class="hide">y = |x-1|</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#7c3aed;"></span><span id="act2_lgA"  class="hide">y = |x+a|</span></div>
-      </div>
-
-      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
-    </div>
-
-    <div class="card">
-      <h3 class="title">操作区</h3>
-
-      <button class="btn" id="act2_btnP1">显示/隐藏：y = |x+1|</button>
-      <button class="btn" id="act2_btnM1">显示/隐藏：y = |x-1|</button>
-      <button class="btn" id="act2_btnA">进入/退出：y = |x+a|（出现滑条）</button>
-
-      <div id="act2_aPanel" class="hide">
-        <div class="divider"></div>
         <div class="row">
-          <div style="font-weight:800;">a</div>
-          <div class="mono" id="act2_aVal">0</div>
+          <label>辅助：</label>
+          <div class="ctrl">
+            <input type="checkbox" id="a1ShowAxis" />
+            <span class="small">显示对称轴 x = -a（竖直虚线）</span>
+          </div>
+          <span class="val"></span>
         </div>
-        <input id="act2_a" type="range" min="-10" max="10" step="0.1" value="0" />
-        <div class="hint mono" style="margin-top:8px;">
-          拖动 a：改变图象左右平移（顶点横坐标为 -a）。
-        </div>
-      </div>
 
-      <div class="divider"></div>
-      <button class="btn" id="act2_reset">重置活动二</button>
-      <div class="hint mono" style="margin-top:10px;">重置后：只保留 y=|x|（虚线）。</div>
-    </div>
+      </div>
+    </aside>
   </div>
+</section>
 
-  <!-- 活动三 -->
-  <div class="wrap hide" id="act3">
-    <div class="card">
-      <h3 class="title">活动三：从 y=|x+1| 出发，观察 y=|x+1|+b 中 b 的影响</h3>
-      <div class="mono" id="act3_eqInfo"></div>
-
-      <div class="plotWrap">
-        <svg id="act3_plot" viewBox="0 0 900 900" aria-label="活动三坐标系与函数图象">
-          <g id="act3_gridLayer"></g>
-          <g id="act3_axisLayer"></g>
-          <g id="act3_labelLayer"></g>
-
-          <path id="act3_baseCurve" class="curveBase" d=""></path>
-
-          <path id="act3_curveUp1" class="curve a3_up1 hide" d=""></path>
-          <path id="act3_curveDn1" class="curve a3_dn1 hide" d=""></path>
-          <path id="act3_curveB"   class="curve a3_b   hide" d=""></path>
-        </svg>
-      </div>
-
-      <div class="legend">
-        <div class="lg"><span class="sw dash"></span><span>y = |x+1|（虚线基准）</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#d62828;"></span><span id="act3_lgUp1" class="hide">y = |x+1| + 1</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#1d4ed8;"></span><span id="act3_lgDn1" class="hide">y = |x+1| - 1</span></div>
-        <div class="lg"><span class="sw" style="border-top-color:#7c3aed;"></span><span id="act3_lgB"   class="hide">y = |x+1| + b</span></div>
-      </div>
-
-      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
-    </div>
-
-    <div class="card">
-      <h3 class="title">操作区</h3>
-
-      <button class="btn" id="act3_btnUp1">显示/隐藏：y = |x+1| + 1</button>
-      <button class="btn" id="act3_btnDn1">显示/隐藏：y = |x+1| - 1</button>
-      <button class="btn" id="act3_btnB">进入/退出：y = |x+1| + b（出现滑条）</button>
-
-      <div id="act3_bPanel" class="hide">
-        <div class="divider"></div>
-        <div class="row">
-          <div style="font-weight:800;">b</div>
-          <div class="mono" id="act3_bVal">0</div>
+<!-- 活动二 -->
+<section class="page" id="pageAct2">
+  <div class="wrap">
+    <section class="left">
+      <div class="canvasBar">
+        <div class="group">
+          <button class="btn ghost" id="a2ResetViewBtn">重置视图</button>
+          <button class="btn danger" id="a2ClearAllBtn">清空画布</button>
+          <button class="btn ghost" id="a2ToggleAxesBtn">隐藏坐标系</button>
+          <label class="toggle">
+            <input type="checkbox" id="a2GridToggle" checked />
+            显示网格
+          </label>
         </div>
-        <input id="act3_b" type="range" min="-20" max="20" step="0.1" value="0" />
-        <div class="hint mono" style="margin-top:8px;">
-          拖动 b：改变图象上下平移（整体上移/下移 b 个单位）。
+        <div class="group small">
+          视窗：x∈[<span id="a2vxMin">-30</span>, <span id="a2vxMax">30</span>]，
+          y∈[<span id="a2vyMin">-30</span>, <span id="a2vyMax">30</span>]
+        </div>
+        <div class="group small">操作：拖动曲线=移动片段；拖动端点=改定义域</div>
+      </div>
+      <canvas class="stage" id="a2Stage"></canvas>
+    </section>
+
+    <aside class="right">
+      <div class="hintBox">
+        <div class="hintTitle">任务约束提示</div>
+        <div class="hintText">
+          至少 1 条 V 形函数 y=|x+a|；至少 1 条一次函数 y=kx+b；每条函数必须设置定义域；设计需能解释（平移/参数/定义域/对称或支撑或边界）。
+        </div>
+        <div class="statusRow">
+          <span class="badge" id="a2StatusV">⚠️ 至少 1 条 V</span>
+          <span class="badge" id="a2StatusL">⚠️ 至少 1 条直线</span>
         </div>
       </div>
 
-      <div class="divider"></div>
-      <button class="btn" id="act3_reset">重置活动三</button>
-      <div class="hint mono" style="margin-top:10px;">重置后：只保留 y=|x+1|（虚线）。</div>
-    </div>
+      <div class="topActions">
+        <button class="btn" id="a2AddVBtn">+ 添加 V 形函数</button>
+        <button class="btn secondary" id="a2AddLBtn">+ 添加直线函数</button>
+      </div>
+
+      <div class="panelSectionTitle">构件列表</div>
+      <div id="a2Cards" class="cards"></div>
+      <div id="a2EmptyTip" class="emptyTip" style="display:none;">
+        先点击上方按钮添加构件开始设计。提示：画布内可直接拖动曲线与端点。
+      </div>
+    </aside>
   </div>
-
-  <!-- 活动四 -->
-  <div class="wrap hide" id="act4">
-    <div class="card">
-      <h3 class="title">活动四：y = k|x+a| + b（同时拖动 k、a、b）</h3>
-      <div class="mono" id="act4_eqInfo"></div>
-
-      <div class="plotWrap">
-        <svg id="act4_plot" viewBox="0 0 900 900" aria-label="活动四坐标系与函数图象">
-          <g id="act4_gridLayer"></g>
-          <g id="act4_axisLayer"></g>
-          <g id="act4_labelLayer"></g>
-
-          <path id="act4_curve" class="curve a4_main" d=""></path>
-        </svg>
-      </div>
-
-      <div class="legend">
-        <div class="lg"><span class="sw" style="border-top-color:#111827;"></span><span>y = k|x+a| + b</span></div>
-      </div>
-
-      <div class="hint mono note">坐标轴已标注 x、y，原点标注 O。</div>
-    </div>
-
-    <div class="card">
-      <h3 class="title">参数区</h3>
-
-      <div class="row">
-        <div style="font-weight:800;">k</div>
-        <div class="mono" id="act4_kVal">1</div>
-      </div>
-      <input id="act4_k" type="range" min="-5" max="5" step="0.1" value="1" />
-
-      <div class="divider"></div>
-
-      <div class="row">
-        <div style="font-weight:800;">a</div>
-        <div class="mono" id="act4_aVal">0</div>
-      </div>
-      <input id="act4_a" type="range" min="-10" max="10" step="0.1" value="0" />
-
-      <div class="divider"></div>
-
-      <div class="row">
-        <div style="font-weight:800;">b</div>
-        <div class="mono" id="act4_bVal">0</div>
-      </div>
-      <input id="act4_b" type="range" min="-20" max="20" step="0.1" value="0" />
-
-      <div class="divider"></div>
-      <button class="btn" id="act4_reset">重置活动四（k=1,a=0,b=0）</button>
-
-      <div class="hint mono" style="margin-top:10px;">
-        说明：活动四坐标窗与活动一一致（范围较大），便于观察 k,a,b 的综合影响。
-      </div>
-    </div>
-  </div>
+</section>
 
 <script>
-(() => {
-  // ---------------------------
-  // Tabs
-  // ---------------------------
-  const tab1 = document.getElementById('tab1');
-  const tab2 = document.getElementById('tab2');
-  const tab3 = document.getElementById('tab3');
-  const tab4 = document.getElementById('tab4');
+document.addEventListener('DOMContentLoaded', () => {
 
-  const act1 = document.getElementById('act1');
-  const act2 = document.getElementById('act2');
-  const act3 = document.getElementById('act3');
-  const act4 = document.getElementById('act4');
+  /** =========================
+   *  顶部活动切换
+   * ========================= */
+  const tabAct1 = document.getElementById('tabAct1');
+  const tabAct2 = document.getElementById('tabAct2');
+  const pageAct1 = document.getElementById('pageAct1');
+  const pageAct2 = document.getElementById('pageAct2');
 
-  function setTab(n){
-    [tab1,tab2,tab3,tab4].forEach(t=>t.classList.remove('active'));
-    [act1,act2,act3,act4].forEach(a=>a.classList.add('hide'));
-    if(n===1){ tab1.classList.add('active'); act1.classList.remove('hide'); }
-    if(n===2){ tab2.classList.add('active'); act2.classList.remove('hide'); }
-    if(n===3){ tab3.classList.add('active'); act3.classList.remove('hide'); }
-    if(n===4){ tab4.classList.add('active'); act4.classList.remove('hide'); }
-  }
-  tab1.addEventListener('click', ()=>setTab(1));
-  tab2.addEventListener('click', ()=>setTab(2));
-  tab3.addEventListener('click', ()=>setTab(3));
-  tab4.addEventListener('click', ()=>setTab(4));
+  let a1Api = null;
+  let a2Api = null;
 
-  // ---------------------------
-  // Shared plot helpers (1:1)
-  // ---------------------------
-  const W=900, H=900, M=70;
-  const PW=W-2*M, PH=H-2*M;
-
-  // 视窗：活动一&四范围较大；活动二/三放大显示（范围更小）
-  const A1  = { xMin:-40, xMax:40, yMin:-40, yMax:40 };
-  const A23 = { xMin:-12, xMax:12, yMin:-12, yMax:12 };
-
-  function w2s(x, y, win){
-    const sx = M + (x - win.xMin) / (win.xMax - win.xMin) * PW;
-    const sy = M + (win.yMax - y) / (win.yMax - win.yMin) * PH;
-    return [sx, sy];
-  }
-
-  function niceStep(range){
-    const rough = range/8;
-    const pow = Math.pow(10, Math.floor(Math.log10(rough)));
-    const n = rough/pow;
-    if(n<1.5) return 1*pow;
-    if(n<3) return 2*pow;
-    if(n<7) return 5*pow;
-    return 10*pow;
-  }
-
-  function clearLayer(g){ while(g.firstChild) g.removeChild(g.firstChild); }
-
-  function svgLine(x1,y1,x2,y2, cls){
-    const ln = document.createElementNS("http://www.w3.org/2000/svg","line");
-    ln.setAttribute("x1", x1); ln.setAttribute("y1", y1);
-    ln.setAttribute("x2", x2); ln.setAttribute("y2", y2);
-    ln.setAttribute("class", cls);
-    return ln;
-  }
-
-  function drawGridAxes(gridLayer, axisLayer, win){
-    clearLayer(gridLayer);
-    clearLayer(axisLayer);
-
-    const stepX = niceStep(win.xMax - win.xMin);
-    const stepY = niceStep(win.yMax - win.yMin);
-
-    for(let x=Math.ceil(win.xMin/stepX)*stepX; x<=win.xMax; x+=stepX){
-      const [sx] = w2s(x,0,win);
-      gridLayer.appendChild(svgLine(sx, M, sx, H-M, "grid"));
+  const setActiveTab = (which) => {
+    if (which === 1){
+      tabAct1.classList.add('active');
+      tabAct2.classList.remove('active');
+      pageAct1.classList.add('active');
+      pageAct2.classList.remove('active');
+      a1Api?.resize();
+      a1Api?.draw();
+    } else {
+      tabAct2.classList.add('active');
+      tabAct1.classList.remove('active');
+      pageAct2.classList.add('active');
+      pageAct1.classList.remove('active');
+      a2Api?.resize();
+      a2Api?.draw();
     }
-    for(let y=Math.ceil(win.yMin/stepY)*stepY; y<=win.yMax; y+=stepY){
-      const [,sy] = w2s(0,y,win);
-      gridLayer.appendChild(svgLine(M, sy, W-M, sy, "grid"));
-    }
+  };
 
-    const [x0,y0] = w2s(0,0,win);
-    axisLayer.appendChild(svgLine(x0, M, x0, H-M, "axis"));
-    axisLayer.appendChild(svgLine(M, y0, W-M, y0, "axis"));
-  }
+  tabAct1.addEventListener('click', () => setActiveTab(1));
+  tabAct2.addEventListener('click', () => setActiveTab(2));
 
-  // 坐标轴标注：x、y、O
-  function drawAxisLabels(labelLayer, win){
-    clearLayer(labelLayer);
+  /** =========================
+   *  活动一：观察端
+   * ========================= */
+  function initActivity1(){
+    const canvas = document.getElementById('a1Stage');
+    const ctx = canvas.getContext('2d');
 
-    const [x0, y0] = w2s(0,0,win);
+    const gridToggle = document.getElementById('a1GridToggle');
+    const resetViewBtn = document.getElementById('a1ResetViewBtn');
+    const toggleAxesBtn = document.getElementById('a1ToggleAxesBtn');
 
-    const O = document.createElementNS("http://www.w3.org/2000/svg","text");
-    O.setAttribute("x", x0 + 6);
-    O.setAttribute("y", y0 - 6);
-    O.setAttribute("font-size", "16");
-    O.setAttribute("font-weight", "800");
-    O.textContent = "O";
-    labelLayer.appendChild(O);
+    const exprEl = document.getElementById('a1Expr');
+    const aSlider = document.getElementById('a1ASlider');
+    const aNum = document.getElementById('a1ANum');
+    const aVal = document.getElementById('a1AVal');
+    const showAxisCk = document.getElementById('a1ShowAxis');
 
-    const [xEnd, yAxis] = w2s(win.xMax, 0, win);
-    const xl = document.createElementNS("http://www.w3.org/2000/svg","text");
-    xl.setAttribute("x", xEnd - 10);
-    xl.setAttribute("y", yAxis - 10);
-    xl.setAttribute("font-size", "16");
-    xl.setAttribute("font-weight", "800");
-    xl.textContent = "x";
-    labelLayer.appendChild(xl);
+    const vEls = {
+      xMin: document.getElementById('a1vxMin'),
+      xMax: document.getElementById('a1vxMax'),
+      yMin: document.getElementById('a1vyMin'),
+      yMax: document.getElementById('a1vyMax'),
+    };
 
-    const [xAxis, yEnd] = w2s(0, win.yMax, win);
-    const yl = document.createElementNS("http://www.w3.org/2000/svg","text");
-    yl.setAttribute("x", xAxis + 10);
-    yl.setAttribute("y", yEnd + 18);
-    yl.setAttribute("font-size", "16");
-    yl.setAttribute("font-weight", "800");
-    yl.textContent = "y";
-    labelLayer.appendChild(yl);
-  }
+    const viewDefault = { xMin: -10, xMax: 10, yMin: -10, yMax: 10 };
+    let view = { ...viewDefault };
 
-  function fmt(n){
-    const s = (Math.round(n*10)/10).toFixed(1);
-    return s.replace(/\.0$/,'');
-  }
+    let showAxes = true;
+    let a = 0;
+    let showAxis = false;
 
-  function pathFromFunc(func, win){
-    const N=1200;
-    let d="";
-    for(let i=0;i<=N;i++){
-      const x = win.xMin + (win.xMax-win.xMin)*i/N;
-      const y = func(x);
-      const [sx,sy] = w2s(x,y,win);
-      d += (i===0 ? `M ${sx.toFixed(2)} ${sy.toFixed(2)}` : ` L ${sx.toFixed(2)} ${sy.toFixed(2)}`);
-    }
-    return d;
-  }
+    const setViewText = () => {
+      vEls.xMin.textContent = view.xMin;
+      vEls.xMax.textContent = view.xMax;
+      vEls.yMin.textContent = view.yMin;
+      vEls.yMax.textContent = view.yMax;
+    };
 
-  function setOnOff(btn, on){
-    if(on) btn.classList.add('on');
-    else btn.classList.remove('on');
-  }
+    const getTransform = () => {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width, h = rect.height;
+      const xSpan = view.xMax - view.xMin;
+      const ySpan = view.yMax - view.yMin;
+      const scale = Math.min(w / xSpan, h / ySpan);
+      const xC = (view.xMin + view.xMax) / 2;
+      const yC = (view.yMin + view.yMax) / 2;
+      return { w, h, scale, xC, yC };
+    };
 
-  function toggleCurve(btn, curveEl, legendEl){
-    const isOn = !curveEl.classList.contains('hide');
-    if(isOn){
-      curveEl.classList.add('hide');
-      legendEl.classList.add('hide');
-      setOnOff(btn,false);
-    }else{
-      curveEl.classList.remove('hide');
-      legendEl.classList.remove('hide');
-      setOnOff(btn,true);
-    }
-  }
+    const worldToScreen = (x, y) => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const sx = (x - xC) * scale + w / 2;
+      const sy = h / 2 - (y - yC) * scale;
+      return { sx, sy };
+    };
 
-  // ---------------------------
-  // Activity 1 (k) : use A1
-  // ---------------------------
-  (function initAct1(){
-    const win = A1;
+    // 合帧绘制
+    let drawPending = false;
+    const requestDraw = () => {
+      if (drawPending) return;
+      drawPending = true;
+      requestAnimationFrame(() => {
+        drawPending = false;
+        draw();
+      });
+    };
 
-    const gridLayer = document.getElementById('act1_gridLayer');
-    const axisLayer = document.getElementById('act1_axisLayer');
-    const labelLayer = document.getElementById('act1_labelLayer');
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const cssW = Math.max(10, rect.width);
+      const cssH = Math.max(10, rect.height);
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      requestDraw();
+    };
 
-    const baseCurve = document.getElementById('act1_baseCurve');
-    const curve2 = document.getElementById('act1_curve2');
-    const curveHalf = document.getElementById('act1_curveHalf');
-    const curveNeg = document.getElementById('act1_curveNeg');
-    const curveK = document.getElementById('act1_curveK');
+    const chooseNiceStep = (raw) => {
+      const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+      const n = raw / pow;
+      if (n < 1.5) return 1 * pow;
+      if (n < 3.5) return 2 * pow;
+      if (n < 7.5) return 5 * pow;
+      return 10 * pow;
+    };
 
-    const eqInfo = document.getElementById('act1_eqInfo');
+    const drawGrid = () => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const xHalf = (w/2) / scale;
+      const yHalf = (h/2) / scale;
+      const xVisMin = xC - xHalf, xVisMax = xC + xHalf;
+      const yVisMin = yC - yHalf, yVisMax = yC + yHalf;
 
-    const btn2 = document.getElementById('act1_btn2');
-    const btnHalf = document.getElementById('act1_btnHalf');
-    const btnNeg = document.getElementById('act1_btnNeg');
-    const btnK = document.getElementById('act1_btnK');
-    const resetBtn = document.getElementById('act1_reset');
+      ctx.save();
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim() || '#e6e6e6';
+      ctx.lineWidth = 1;
 
-    const kPanel = document.getElementById('act1_kPanel');
-    const kEl = document.getElementById('act1_k');
-    const kVal = document.getElementById('act1_kVal');
+      const step = chooseNiceStep(Math.max(view.xMax - view.xMin, view.yMax - view.yMin) / 12);
 
-    const lg2 = document.getElementById('act1_lg2');
-    const lgHalf = document.getElementById('act1_lgHalf');
-    const lgNeg = document.getElementById('act1_lgNeg');
-    const lgK = document.getElementById('act1_lgK');
-
-    drawGridAxes(gridLayer, axisLayer, win);
-    drawAxisLabels(labelLayer, win);
-
-    baseCurve.setAttribute('d', pathFromFunc(x => Math.abs(x), win));
-    curve2.setAttribute('d', pathFromFunc(x => 2*Math.abs(x), win));
-    curveHalf.setAttribute('d', pathFromFunc(x => 0.5*Math.abs(x), win));
-    curveNeg.setAttribute('d', pathFromFunc(x => -1*Math.abs(x), win));
-    curveK.setAttribute('d', pathFromFunc(x => parseFloat(kEl.value)*Math.abs(x), win));
-
-    function updateEq(){
-      const parts = [`基准：y = |x|（虚线）`];
-      if(!curve2.classList.contains('hide')) parts.push(`叠加：y = 2|x|`);
-      if(!curveHalf.classList.contains('hide')) parts.push(`叠加：y = 1/2|x|`);
-      if(!curveNeg.classList.contains('hide')) parts.push(`叠加：y = -|x|`);
-      if(!curveK.classList.contains('hide')) parts.push(`叠加：y = ${fmt(parseFloat(kEl.value))}|x|`);
-      eqInfo.textContent = parts.join("    |    ");
-    }
-
-    btn2.addEventListener('click', ()=>{ toggleCurve(btn2, curve2, lg2); updateEq(); });
-    btnHalf.addEventListener('click', ()=>{ toggleCurve(btnHalf, curveHalf, lgHalf); updateEq(); });
-    btnNeg.addEventListener('click', ()=>{ toggleCurve(btnNeg, curveNeg, lgNeg); updateEq(); });
-
-    btnK.addEventListener('click', ()=>{
-      const on = !curveK.classList.contains('hide');
-      if(on){
-        curveK.classList.add('hide');
-        lgK.classList.add('hide');
-        setOnOff(btnK,false);
-        kPanel.classList.add('hide');
-      }else{
-        curveK.classList.remove('hide');
-        lgK.classList.remove('hide');
-        setOnOff(btnK,true);
-        kPanel.classList.remove('hide');
-        curveK.setAttribute('d', pathFromFunc(x => parseFloat(kEl.value)*Math.abs(x), win));
+      for (let x = Math.ceil(xVisMin / step) * step; x <= xVisMax + 1e-9; x += step){
+        const p1 = worldToScreen(x, yVisMin);
+        const p2 = worldToScreen(x, yVisMax);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
       }
-      updateEq();
-    });
-
-    kEl.addEventListener('input', ()=>{
-      const k = parseFloat(kEl.value);
-      kVal.textContent = fmt(k);
-      if(!curveK.classList.contains('hide')){
-        curveK.setAttribute('d', pathFromFunc(x => k*Math.abs(x), win));
+      for (let y = Math.ceil(yVisMin / step) * step; y <= yVisMax + 1e-9; y += step){
+        const p1 = worldToScreen(xVisMin, y);
+        const p2 = worldToScreen(xVisMax, y);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
       }
-      updateEq();
-    });
+      ctx.restore();
+    };
 
-    resetBtn.addEventListener('click', ()=>{
-      curve2.classList.add('hide'); lg2.classList.add('hide'); setOnOff(btn2,false);
-      curveHalf.classList.add('hide'); lgHalf.classList.add('hide'); setOnOff(btnHalf,false);
-      curveNeg.classList.add('hide'); lgNeg.classList.add('hide'); setOnOff(btnNeg,false);
-      curveK.classList.add('hide'); lgK.classList.add('hide'); setOnOff(btnK,false);
-      kPanel.classList.add('hide');
+    const drawAxes = () => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const xHalf = (w/2) / scale;
+      const yHalf = (h/2) / scale;
+      const xVisMin = xC - xHalf, xVisMax = xC + xHalf;
+      const yVisMin = yC - yHalf, yVisMax = yC + yHalf;
 
-      kEl.value = 1; kVal.textContent = "1";
-      curveK.setAttribute('d', pathFromFunc(x => 1*Math.abs(x), win));
-      updateEq();
-    });
+      ctx.save();
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--axis').trim() || '#000';
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.lineWidth = 2;
 
-    updateEq();
-  })();
+      if (yVisMin <= 0 && yVisMax >= 0){
+        const p1 = worldToScreen(xVisMin, 0);
+        const p2 = worldToScreen(xVisMax, 0);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
 
-  // ---------------------------
-  // Activity 2 (a) : use A23 (zoom in)
-  // ---------------------------
-  (function initAct2(){
-    const win = A23;
+      if (xVisMin <= 0 && xVisMax >= 0){
+        const p1 = worldToScreen(0, yVisMin);
+        const p2 = worldToScreen(0, yVisMax);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
 
-    const gridLayer = document.getElementById('act2_gridLayer');
-    const axisLayer = document.getElementById('act2_axisLayer');
-    const labelLayer = document.getElementById('act2_labelLayer');
+      // x, y, O（要求）
+      ctx.font = '13px ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial';
+      ctx.textBaseline = 'middle';
 
-    const baseCurve = document.getElementById('act2_baseCurve');
-    const curveP1 = document.getElementById('act2_curveP1');
-    const curveM1 = document.getElementById('act2_curveM1');
-    const curveA  = document.getElementById('act2_curveA');
+      if (xVisMin <= 0 && xVisMax >= 0 && yVisMin <= 0 && yVisMax >= 0){
+        const o = worldToScreen(0, 0);
+        ctx.fillText('O', o.sx + 6, o.sy + 12);
+      }
+      if (yVisMin <= 0 && yVisMax >= 0){
+        const p = worldToScreen(xVisMax, 0);
+        ctx.fillText('x', p.sx - 14, p.sy + 18);
+      }
+      if (xVisMin <= 0 && xVisMax >= 0){
+        const p = worldToScreen(0, yVisMax);
+        ctx.fillText('y', p.sx + 12, p.sy + 10);
+      }
 
-    const eqInfo = document.getElementById('act2_eqInfo');
+      ctx.restore();
+    };
 
-    const btnP1 = document.getElementById('act2_btnP1');
-    const btnM1 = document.getElementById('act2_btnM1');
-    const btnA  = document.getElementById('act2_btnA');
-    const resetBtn = document.getElementById('act2_reset');
+    const drawCurve = (fn, style, dashed=false) => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const xHalf = (w/2) / scale;
+      const xVisMin = xC - xHalf, xVisMax = xC + xHalf;
 
-    const aPanel = document.getElementById('act2_aPanel');
-    const aEl = document.getElementById('act2_a');
-    const aVal = document.getElementById('act2_aVal');
+      const samples = 800;
+      const dx = (xVisMax - xVisMin) / samples;
 
-    const lgP1 = document.getElementById('act2_lgP1');
-    const lgM1 = document.getElementById('act2_lgM1');
-    const lgA  = document.getElementById('act2_lgA');
+      ctx.save();
+      ctx.strokeStyle = style;
+      ctx.lineWidth = 2;
+      if (dashed) ctx.setLineDash([7,7]);
+      ctx.beginPath();
+      for (let i=0; i<=samples; i++){
+        const x = xVisMin + i * dx;
+        const y = fn(x);
+        const p = worldToScreen(x, y);
+        if (i===0) ctx.moveTo(p.sx, p.sy);
+        else ctx.lineTo(p.sx, p.sy);
+      }
+      ctx.stroke();
+      if (dashed) ctx.setLineDash([]);
+      ctx.restore();
+    };
 
-    drawGridAxes(gridLayer, axisLayer, win);
-    drawAxisLabels(labelLayer, win);
+    const drawSymAxis = () => {
+      const x0 = -a;
+      const { w, h, scale, xC, yC } = getTransform();
+      const xHalf = (w/2) / scale;
+      const yHalf = (h/2) / scale;
+      const xVisMin = xC - xHalf, xVisMax = xC + xHalf;
+      const yVisMin = yC - yHalf, yVisMax = yC + yHalf;
+      if (x0 < xVisMin || x0 > xVisMax) return;
 
-    baseCurve.setAttribute('d', pathFromFunc(x => Math.abs(x), win));
-    curveP1.setAttribute('d', pathFromFunc(x => Math.abs(x+1), win));
-    curveM1.setAttribute('d', pathFromFunc(x => Math.abs(x-1), win));
-    curveA.setAttribute('d',  pathFromFunc(x => Math.abs(x + parseFloat(aEl.value)), win));
+      const p1 = worldToScreen(x0, yVisMin);
+      const p2 = worldToScreen(x0, yVisMax);
 
-    function updateEq(){
-      const parts = [`基准：y = |x|（虚线）`];
-      if(!curveP1.classList.contains('hide')) parts.push(`叠加：y = |x+1|`);
-      if(!curveM1.classList.contains('hide')) parts.push(`叠加：y = |x-1|`);
-      if(!curveA.classList.contains('hide'))  parts.push(`叠加：y = |x+${fmt(parseFloat(aEl.value))}|`);
-      eqInfo.textContent = parts.join("    |    ");
+      ctx.save();
+      ctx.strokeStyle = 'rgba(31,119,180,.45)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6,6]);
+      ctx.beginPath();
+      ctx.moveTo(p1.sx, p1.sy);
+      ctx.lineTo(p2.sx, p2.sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    };
+
+    // 新增：画布内“表达式标注（图象旁边）”——以图例形式呈现
+    const getShiftExpr = () => {
+      if (Math.abs(a) < 1e-12) return 'y = |x|';
+      if (a > 0) return `y = |x + ${a}|`;
+      return `y = |x - ${Math.abs(a)}|`;
+    };
+
+    const drawLegend = () => {
+      const { w, h } = getTransform();
+
+      const pad = 10;
+      const boxW = 220;
+      const boxH = 54;
+
+      ctx.save();
+      // 背景框
+      ctx.fillStyle = 'rgba(255,255,255,.88)';
+      ctx.strokeStyle = 'rgba(0,0,0,.10)';
+      ctx.lineWidth = 1;
+      // 简易圆角矩形
+      const x = pad, y = pad, r = 10;
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + boxW - r, y);
+      ctx.quadraticCurveTo(x + boxW, y, x + boxW, y + r);
+      ctx.lineTo(x + boxW, y + boxH - r);
+      ctx.quadraticCurveTo(x + boxW, y + boxH, x + boxW - r, y + boxH);
+      ctx.lineTo(x + r, y + boxH);
+      ctx.quadraticCurveTo(x, y + boxH, x, y + boxH - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // 字体
+      ctx.font = '13px ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#111';
+
+      // 1) y=|x| 灰虚线
+      const y1 = y + 18;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0,0,0,.35)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7,7]);
+      ctx.beginPath();
+      ctx.moveTo(x + 12, y1);
+      ctx.lineTo(x + 48, y1);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = 'rgba(0,0,0,.75)';
+      ctx.fillText('y = |x|', x + 56, y1);
+
+      // 2) y=|x+a| 蓝实线（随 a 更新）
+      const y2 = y + 38;
+      ctx.save();
+      ctx.strokeStyle = '#1f77b4';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x + 12, y2);
+      ctx.lineTo(x + 48, y2);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = '#1f77b4';
+      ctx.fillText(getShiftExpr(), x + 56, y2);
+
+      ctx.restore();
+    };
+
+    const updateExpr = () => {
+      const aStr = (a >= 0) ? `+ ${a}` : `- ${Math.abs(a)}`;
+      exprEl.textContent = `y = |x ${aStr}|`;
+      aVal.textContent = a.toString();
+    };
+
+    function draw(){
+      const { w, h } = getTransform();
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0,0,w,h);
+
+      if (gridToggle.checked) drawGrid();
+      if (showAxes) drawAxes();
+
+      // 基准 y=|x| 灰虚线
+      drawCurve((x)=>Math.abs(x), 'rgba(0,0,0,.35)', true);
+
+      // 变换 y=|x+a| 蓝实线
+      drawCurve((x)=>Math.abs(x + a), '#1f77b4', false);
+
+      if (showAxis) drawSymAxis();
+
+      // 新增：表达式标注（图象旁边）
+      drawLegend();
     }
 
-    btnP1.addEventListener('click', ()=>{ toggleCurve(btnP1, curveP1, lgP1); updateEq(); });
-    btnM1.addEventListener('click', ()=>{ toggleCurve(btnM1, curveM1, lgM1); updateEq(); });
+    // 绑定 UI
+    const commitA = (v) => {
+      a = Math.max(-10, Math.min(10, v));
+      a = Math.round(a * 2) / 2; // 0.5 步长对齐
+      aSlider.value = a;
+      aNum.value = a;
+      updateExpr();
+      requestDraw();
+    };
 
-    btnA.addEventListener('click', ()=>{
-      const on = !curveA.classList.contains('hide');
-      if(on){
-        curveA.classList.add('hide'); lgA.classList.add('hide'); setOnOff(btnA,false); aPanel.classList.add('hide');
-      }else{
-        curveA.classList.remove('hide'); lgA.classList.remove('hide'); setOnOff(btnA,true); aPanel.classList.remove('hide');
-        curveA.setAttribute('d', pathFromFunc(x => Math.abs(x + parseFloat(aEl.value)), win));
+    aSlider.addEventListener('input', () => commitA(parseFloat(aSlider.value)));
+    aNum.addEventListener('change', () => commitA(parseFloat(aNum.value)));
+    showAxisCk.addEventListener('change', () => { showAxis = showAxisCk.checked; requestDraw(); });
+
+    resetViewBtn.addEventListener('click', () => {
+      view = { ...viewDefault };
+      setViewText();
+      requestDraw();
+    });
+
+    toggleAxesBtn.addEventListener('click', () => {
+      showAxes = !showAxes;
+      toggleAxesBtn.textContent = showAxes ? '隐藏坐标系' : '显示坐标系';
+      requestDraw();
+    });
+
+    gridToggle.addEventListener('change', () => requestDraw());
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
+    window.addEventListener('resize', resize);
+
+    setViewText();
+    commitA(0);
+    requestAnimationFrame(() => resize());
+
+    return { resize, draw: requestDraw };
+  }
+
+  /** =========================
+   *  活动二：生成性任务工作台
+   *  （保持你确认“很好”的版本）
+   * ========================= */
+  function initActivity2(){
+    const TYPE_V = 'V';
+    const TYPE_L = 'L';
+
+    const DOMAIN_MIN = -40;
+    const DOMAIN_MAX =  40;
+    const EPS = 0.1;
+    const SNAP = 0.1;
+
+    const snap = (v, step = SNAP) => Math.round(v / step) * step;
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+    const formatNum = (n) => {
+      const v = Math.abs(n) < 1e-12 ? 0 : n;
+      return (Math.round(v * 1000) / 1000).toString();
+    };
+    const hexToRgba = (hex, a) => {
+      const h = hex.replace('#','').trim();
+      const n = parseInt(h, 16);
+      const r = (n >> 16) & 255;
+      const g = (n >> 8) & 255;
+      const b = n & 255;
+      return `rgba(${r},${g},${b},${a})`;
+    };
+
+    const canvas = document.getElementById('a2Stage');
+    const ctx = canvas.getContext('2d');
+
+    const viewDefault = { xMin: -30, xMax: 30, yMin: -30, yMax: 30 };
+    let view = { ...viewDefault };
+
+    const vEls = {
+      xMin: document.getElementById('a2vxMin'),
+      xMax: document.getElementById('a2vxMax'),
+      yMin: document.getElementById('a2vyMin'),
+      yMax: document.getElementById('a2vyMax'),
+    };
+    const setViewText = () => {
+      vEls.xMin.textContent = view.xMin;
+      vEls.xMax.textContent = view.xMax;
+      vEls.yMin.textContent = view.yMin;
+      vEls.yMax.textContent = view.yMax;
+    };
+
+    let showAxes = true;
+    const toggleAxesBtn = document.getElementById('a2ToggleAxesBtn');
+
+    const getTransform = () => {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width, h = rect.height;
+      const xSpan = view.xMax - view.xMin;
+      const ySpan = view.yMax - view.yMin;
+      const scale = Math.min(w / xSpan, h / ySpan);
+      const xC = (view.xMin + view.xMax) / 2;
+      const yC = (view.yMin + view.yMax) / 2;
+      return { w, h, scale, xC, yC };
+    };
+
+    const worldToScreen = (x, y) => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const sx = (x - xC) * scale + w / 2;
+      const sy = h / 2 - (y - yC) * scale;
+      return { sx, sy };
+    };
+
+    const screenToWorld = (sx, sy) => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const x = (sx - w / 2) / scale + xC;
+      const y = (h / 2 - sy) / scale + yC;
+      return { x, y };
+    };
+
+    let drawPending = false;
+    const requestDraw = () => {
+      if (drawPending) return;
+      drawPending = true;
+      requestAnimationFrame(() => {
+        drawPending = false;
+        draw();
+      });
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const cssW = Math.max(10, rect.width);
+      const cssH = Math.max(10, rect.height);
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      requestDraw();
+    };
+
+    let components = [];
+    let vCount = 0;
+    let lCount = 0;
+    let compSeq = 1;
+    const newId = () => `c_${compSeq++}`;
+
+    const palette = [
+      '#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd',
+      '#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf',
+      '#0f4c81','#a23b72','#1b9e77','#d95f02','#7570b3'
+    ];
+    let colorIndex = 0;
+    const nextColor = () => palette[(colorIndex++) % palette.length];
+
+    const ensureDomain = (c) => {
+      if (c.domain.xMax - c.domain.xMin < EPS){
+        const mid = (c.domain.xMin + c.domain.xMax) / 2;
+        c.domain.xMin = mid - EPS/2;
+        c.domain.xMax = mid + EPS/2;
       }
-      updateEq();
-    });
-
-    aEl.addEventListener('input', ()=>{
-      const a = parseFloat(aEl.value);
-      aVal.textContent = fmt(a);
-      if(!curveA.classList.contains('hide')){
-        curveA.setAttribute('d', pathFromFunc(x => Math.abs(x + a), win));
+      const width = c.domain.xMax - c.domain.xMin;
+      if (c.domain.xMin < DOMAIN_MIN){
+        c.domain.xMin = DOMAIN_MIN;
+        c.domain.xMax = DOMAIN_MIN + width;
       }
-      updateEq();
-    });
+      if (c.domain.xMax > DOMAIN_MAX){
+        c.domain.xMax = DOMAIN_MAX;
+        c.domain.xMin = DOMAIN_MAX - width;
+      }
+      if (c.domain.xMax - c.domain.xMin < EPS){
+        c.domain.xMax = c.domain.xMin + EPS;
+      }
+    };
 
-    resetBtn.addEventListener('click', ()=>{
-      curveP1.classList.add('hide'); lgP1.classList.add('hide'); setOnOff(btnP1,false);
-      curveM1.classList.add('hide'); lgM1.classList.add('hide'); setOnOff(btnM1,false);
-      curveA.classList.add('hide');  lgA.classList.add('hide');  setOnOff(btnA,false);
-      aPanel.classList.add('hide');
+    const defaultComponent = (type) => {
+      if (type === TYPE_V){
+        vCount++;
+        const c = {
+          id: newId(),
+          type: TYPE_V,
+          name: `V${vCount}`,
+          visible: true,
+          color: nextColor(),
+          a: 0,
+          showAxis: false,
+          domain: { xMin: -6, xMax: 6 }
+        };
+        ensureDomain(c);
+        return c;
+      }
+      lCount++;
+      const c = {
+        id: newId(),
+        type: TYPE_L,
+        name: `L${lCount}`,
+        visible: true,
+        color: nextColor(),
+        k: 1,
+        b: 0,
+        showIntercepts: false,
+        domain: { xMin: -6, xMax: 6 }
+      };
+      ensureDomain(c);
+      return c;
+    };
 
-      aEl.value = 0; aVal.textContent = "0";
-      curveA.setAttribute('d', pathFromFunc(x => Math.abs(x), win));
-      updateEq();
-    });
+    const evalY = (c, x) => (c.type === TYPE_V) ? Math.abs(x + c.a) : (c.k * x + c.b);
 
-    updateEq();
-  })();
+    const getExpressionText = (c) => {
+      ensureDomain(c);
+      if (c.type === TYPE_V){
+        const part = c.a >= 0 ? `x+${formatNum(c.a)}` : `x${formatNum(c.a)}`;
+        return `y = |${part}|，定义域：x∈[${formatNum(c.domain.xMin)}, ${formatNum(c.domain.xMax)}]`;
+      } else {
+        const bStr = c.b >= 0 ? `+${formatNum(c.b)}` : `${formatNum(c.b)}`;
+        return `y = (${formatNum(c.k)})x${bStr}，定义域：x∈[${formatNum(c.domain.xMin)}, ${formatNum(c.domain.xMax)}]`;
+      }
+    };
 
-  // ---------------------------
-  // Activity 3 (b) : use A23 (zoom in)
-  // ---------------------------
-  (function initAct3(){
-    const win = A23;
+    const gridToggle = document.getElementById('a2GridToggle');
+    const resetViewBtn = document.getElementById('a2ResetViewBtn');
+    const clearAllBtn = document.getElementById('a2ClearAllBtn');
+    const addVBtn = document.getElementById('a2AddVBtn');
+    const addLBtn = document.getElementById('a2AddLBtn');
 
-    const gridLayer = document.getElementById('act3_gridLayer');
-    const axisLayer = document.getElementById('act3_axisLayer');
-    const labelLayer = document.getElementById('act3_labelLayer');
+    const cardsEl = document.getElementById('a2Cards');
+    const emptyTipEl = document.getElementById('a2EmptyTip');
+    const statusV = document.getElementById('a2StatusV');
+    const statusL = document.getElementById('a2StatusL');
 
-    const baseCurve = document.getElementById('act3_baseCurve');
-    const curveUp1 = document.getElementById('act3_curveUp1');
-    const curveDn1 = document.getElementById('act3_curveDn1');
-    const curveB   = document.getElementById('act3_curveB');
+    const uiMap = new Map();
 
-    const eqInfo = document.getElementById('act3_eqInfo');
+    const updateEmptyTip = () => {
+      emptyTipEl.style.display = components.length === 0 ? 'block' : 'none';
+    };
 
-    const btnUp1 = document.getElementById('act3_btnUp1');
-    const btnDn1 = document.getElementById('act3_btnDn1');
-    const btnB   = document.getElementById('act3_btnB');
-    const resetBtn = document.getElementById('act3_reset');
+    const updateStatuses = () => {
+      const hasV = components.some(c => c.type === TYPE_V);
+      const hasL = components.some(c => c.type === TYPE_L);
 
-    const bPanel = document.getElementById('act3_bPanel');
-    const bEl = document.getElementById('act3_b');
-    const bVal = document.getElementById('act3_bVal');
+      statusV.className = 'badge ' + (hasV ? 'ok' : 'warn');
+      statusV.textContent = (hasV ? '✅' : '⚠️') + ' 至少 1 条 V';
 
-    const lgUp1 = document.getElementById('act3_lgUp1');
-    const lgDn1 = document.getElementById('act3_lgDn1');
-    const lgB   = document.getElementById('act3_lgB');
+      statusL.className = 'badge ' + (hasL ? 'ok' : 'warn');
+      statusL.textContent = (hasL ? '✅' : '⚠️') + ' 至少 1 条直线';
+    };
 
-    drawGridAxes(gridLayer, axisLayer, win);
-    drawAxisLabels(labelLayer, win);
+    const makeRangeRow = ({labelText, min, max, step, getVal, setVal, onUpdateText}) => {
+      const row = document.createElement('div');
+      row.className = 'row';
 
-    baseCurve.setAttribute('d', pathFromFunc(x => Math.abs(x+1), win));
-    curveUp1.setAttribute('d', pathFromFunc(x => Math.abs(x+1) + 1, win));
-    curveDn1.setAttribute('d', pathFromFunc(x => Math.abs(x+1) - 1, win));
-    curveB.setAttribute('d',   pathFromFunc(x => Math.abs(x+1) + parseFloat(bEl.value), win));
+      const label = document.createElement('label');
+      label.textContent = `${labelText}：`;
 
-    function updateEq(){
-      const parts = [`基准：y = |x+1|（虚线）`];
-      if(!curveUp1.classList.contains('hide')) parts.push(`叠加：y = |x+1| + 1`);
-      if(!curveDn1.classList.contains('hide')) parts.push(`叠加：y = |x+1| - 1`);
-      if(!curveB.classList.contains('hide'))   parts.push(`叠加：y = |x+1| + ${fmt(parseFloat(bEl.value))}`);
-      eqInfo.textContent = parts.join("    |    ");
+      const ctrl = document.createElement('div');
+      ctrl.className = 'ctrl';
+
+      const range = document.createElement('input');
+      range.type = 'range';
+      range.min = min;
+      range.max = max;
+      range.step = step;
+
+      const num = document.createElement('input');
+      num.type = 'number';
+      num.step = step;
+      num.min = min;
+      num.max = max;
+      num.style.maxWidth = '110px';
+
+      const valSpan = document.createElement('span');
+      valSpan.className = 'val';
+
+      const syncUI = (v) => {
+        range.value = v;
+        num.value = v;
+        valSpan.textContent = formatNum(v);
+      };
+
+      const commit = (v) => {
+        if (Number.isNaN(v)) return;
+        const vv = clamp(v, min, max);
+        setVal(vv);
+        syncUI(vv);
+        onUpdateText?.();
+        requestDraw();
+      };
+
+      syncUI(getVal());
+      range.addEventListener('input', () => commit(parseFloat(range.value)));
+      num.addEventListener('change', () => commit(parseFloat(num.value)));
+
+      ctrl.appendChild(range);
+      ctrl.appendChild(num);
+      row.appendChild(label);
+      row.appendChild(ctrl);
+      row.appendChild(valSpan);
+
+      return { row, syncUI };
+    };
+
+    const makeDomainField = ({labelText, min, max, step, getVal, setVal, afterCommit}) => {
+      const field = document.createElement('div');
+      field.className = 'field';
+
+      const lab = document.createElement('label');
+      lab.textContent = labelText;
+      field.appendChild(lab);
+
+      const pair = document.createElement('div');
+      pair.className = 'pair';
+
+      const range = document.createElement('input');
+      range.type = 'range';
+      range.min = min;
+      range.max = max;
+      range.step = step;
+
+      const num = document.createElement('input');
+      num.type = 'number';
+      num.step = step;
+      num.min = min;
+      num.max = max;
+
+      const syncUI = (v) => {
+        range.value = v;
+        num.value = v;
+      };
+
+      const commit = (v) => {
+        if (Number.isNaN(v)) return;
+        const vv = clamp(v, min, max);
+        setVal(vv);
+        afterCommit?.();
+        syncUI(getVal());
+        requestDraw();
+      };
+
+      syncUI(getVal());
+      range.addEventListener('input', () => commit(parseFloat(range.value)));
+      num.addEventListener('change', () => commit(parseFloat(num.value)));
+
+      pair.appendChild(range);
+      pair.appendChild(num);
+      field.appendChild(pair);
+
+      return { field, syncUI };
+    };
+
+    const buildCard = (c) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.id = c.id;
+
+      const head = document.createElement('div');
+      head.className = 'cardHeader';
+
+      const left = document.createElement('div');
+      const title = document.createElement('div');
+      title.className = 'cardTitle';
+
+      const dot = document.createElement('span');
+      dot.className = 'colorDot';
+      dot.style.background = c.color;
+
+      const typeTitle = c.type === TYPE_V ? `${c.name}：y=|x+a|` : `${c.name}：y=kx+b`;
+      title.appendChild(dot);
+      title.appendChild(document.createTextNode(typeTitle));
+
+      const expr = document.createElement('div');
+      expr.className = 'expr';
+      expr.textContent = getExpressionText(c);
+
+      left.appendChild(title);
+      left.appendChild(expr);
+
+      const ops = document.createElement('div');
+      ops.className = 'cardOps';
+
+      const visBtn = document.createElement('button');
+      visBtn.className = 'miniBtn primary';
+      visBtn.textContent = c.visible ? '隐藏' : '显示';
+      visBtn.addEventListener('click', () => {
+        c.visible = !c.visible;
+        visBtn.textContent = c.visible ? '隐藏' : '显示';
+        requestDraw();
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'miniBtn danger';
+      delBtn.textContent = '删除';
+      delBtn.addEventListener('click', () => {
+        components = components.filter(x => x.id !== c.id);
+        uiMap.delete(c.id);
+        card.remove();
+        updateEmptyTip();
+        updateStatuses();
+        requestDraw();
+      });
+
+      ops.appendChild(visBtn);
+      ops.appendChild(delBtn);
+
+      head.appendChild(left);
+      head.appendChild(ops);
+      card.appendChild(head);
+
+      const updateExpr = () => { expr.textContent = getExpressionText(c); };
+
+      let syncA=null, syncK=null, syncB=null, syncXMin=null, syncXMax=null;
+
+      if (c.type === TYPE_V){
+        const aRow = makeRangeRow({
+          labelText: 'a',
+          min: -10, max: 10, step: 0.5,
+          getVal: () => c.a,
+          setVal: (v) => { c.a = v; },
+          onUpdateText: updateExpr
+        });
+        card.appendChild(aRow.row);
+        syncA = (v) => { aRow.syncUI(v); updateExpr(); };
+
+        const row = document.createElement('div');
+        row.className = 'row';
+        const lab = document.createElement('label');
+        lab.textContent = '辅助：';
+        const ctrl = document.createElement('div');
+        ctrl.className = 'ctrl';
+
+        const ck = document.createElement('input');
+        ck.type = 'checkbox';
+        ck.checked = !!c.showAxis;
+        ck.addEventListener('change', () => {
+          c.showAxis = ck.checked;
+          requestDraw();
+        });
+
+        const span = document.createElement('span');
+        span.className = 'small';
+        span.textContent = '显示对称轴 x=-a（竖直虚线）';
+
+        ctrl.appendChild(ck);
+        ctrl.appendChild(span);
+        row.appendChild(lab);
+        row.appendChild(ctrl);
+        card.appendChild(row);
+
+      } else {
+        const kRow = makeRangeRow({
+          labelText: 'k',
+          min: -5, max: 5, step: 0.1,
+          getVal: () => c.k,
+          setVal: (v) => { c.k = v; },
+          onUpdateText: updateExpr
+        });
+        card.appendChild(kRow.row);
+        syncK = (v) => { kRow.syncUI(v); updateExpr(); };
+
+        const bRow = makeRangeRow({
+          labelText: 'b',
+          min: -10, max: 10, step: 0.5,
+          getVal: () => c.b,
+          setVal: (v) => { c.b = v; },
+          onUpdateText: updateExpr
+        });
+        card.appendChild(bRow.row);
+        syncB = (v) => { bRow.syncUI(v); updateExpr(); };
+
+        const row = document.createElement('div');
+        row.className = 'row';
+        const lab = document.createElement('label');
+        lab.textContent = '可选：';
+        const ctrl = document.createElement('div');
+        ctrl.className = 'ctrl';
+
+        const ck = document.createElement('input');
+        ck.type = 'checkbox';
+        ck.checked = !!c.showIntercepts;
+        ck.addEventListener('change', () => {
+          c.showIntercepts = ck.checked;
+          requestDraw();
+        });
+
+        const span = document.createElement('span');
+        span.className = 'small';
+        span.textContent = '显示与坐标轴交点（可选）';
+
+        ctrl.appendChild(ck);
+        ctrl.appendChild(span);
+        row.appendChild(lab);
+        row.appendChild(ctrl);
+        card.appendChild(row);
+      }
+
+      const domTitle = document.createElement('div');
+      domTitle.className = 'row';
+      domTitle.innerHTML = `<label>定义域裁剪</label><span class="val small">可在画布拖动端点调整</span>`;
+      card.appendChild(domTitle);
+
+      const domGrid = document.createElement('div');
+      domGrid.className = 'domainGrid';
+
+      const afterDomainCommit = () => {
+        ensureDomain(c);
+        updateExpr();
+      };
+
+      const xMinField = makeDomainField({
+        labelText: 'x_min',
+        min: DOMAIN_MIN, max: DOMAIN_MAX, step: 0.5,
+        getVal: () => c.domain.xMin,
+        setVal: (v) => { c.domain.xMin = v; },
+        afterCommit: afterDomainCommit
+      });
+      const xMaxField = makeDomainField({
+        labelText: 'x_max',
+        min: DOMAIN_MIN, max: DOMAIN_MAX, step: 0.5,
+        getVal: () => c.domain.xMax,
+        setVal: (v) => { c.domain.xMax = v; },
+        afterCommit: afterDomainCommit
+      });
+
+      domGrid.appendChild(xMinField.field);
+      domGrid.appendChild(xMaxField.field);
+      card.appendChild(domGrid);
+
+      syncXMin = (v) => { c.domain.xMin = v; ensureDomain(c); xMinField.syncUI(c.domain.xMin); updateExpr(); };
+      syncXMax = (v) => { c.domain.xMax = v; ensureDomain(c); xMaxField.syncUI(c.domain.xMax); updateExpr(); };
+
+      uiMap.set(c.id, { visBtn, syncA, syncK, syncB, syncXMin, syncXMax, updateExpr });
+
+      return card;
+    };
+
+    const fullRenderCards = () => {
+      cardsEl.innerHTML = '';
+      uiMap.clear();
+      components.forEach(c => cardsEl.appendChild(buildCard(c)));
+      updateEmptyTip();
+      updateStatuses();
+    };
+
+    const chooseNiceStep = (raw) => {
+      const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+      const n = raw / pow;
+      if (n < 1.5) return 1 * pow;
+      if (n < 3.5) return 2 * pow;
+      if (n < 7.5) return 5 * pow;
+      return 10 * pow;
+    };
+
+    const drawGrid = () => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const xHalf = (w/2) / scale;
+      const yHalf = (h/2) / scale;
+      const xVisMin = xC - xHalf, xVisMax = xC + xHalf;
+      const yVisMin = yC - yHalf, yVisMax = yC + yHalf;
+
+      ctx.save();
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim() || '#e6e6e6';
+      ctx.lineWidth = 1;
+
+      const step = chooseNiceStep(Math.max(view.xMax - view.xMin, view.yMax - view.yMin) / 12);
+
+      for (let x = Math.ceil(xVisMin / step) * step; x <= xVisMax + 1e-9; x += step){
+        const p1 = worldToScreen(x, yVisMin);
+        const p2 = worldToScreen(x, yVisMax);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
+      for (let y = Math.ceil(yVisMin / step) * step; y <= yVisMax + 1e-9; y += step){
+        const p1 = worldToScreen(xVisMin, y);
+        const p2 = worldToScreen(xVisMax, y);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
+      ctx.restore();
+    };
+
+    const drawAxes = () => {
+      const { w, h, scale, xC, yC } = getTransform();
+      const xHalf = (w/2) / scale;
+      const yHalf = (h/2) / scale;
+      const xVisMin = xC - xHalf, xVisMax = xC + xHalf;
+      const yVisMin = yC - yHalf, yVisMax = yC + yHalf;
+
+      ctx.save();
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--axis').trim() || '#000';
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.lineWidth = 2;
+
+      if (yVisMin <= 0 && yVisMax >= 0){
+        const p1 = worldToScreen(xVisMin, 0);
+        const p2 = worldToScreen(xVisMax, 0);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
+
+      if (xVisMin <= 0 && xVisMax >= 0){
+        const p1 = worldToScreen(0, yVisMin);
+        const p2 = worldToScreen(0, yVisMax);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
+
+      ctx.font = '13px ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial';
+      ctx.textBaseline = 'middle';
+
+      if (xVisMin <= 0 && xVisMax >= 0 && yVisMin <= 0 && yVisMax >= 0){
+        const o = worldToScreen(0, 0);
+        ctx.fillText('O', o.sx + 6, o.sy + 12);
+      }
+
+      if (yVisMin <= 0 && yVisMax >= 0){
+        const p = worldToScreen(xVisMax, 0);
+        ctx.fillText('x', p.sx - 14, p.sy + 18);
+      }
+
+      if (xVisMin <= 0 && xVisMax >= 0){
+        const p = worldToScreen(0, yVisMax);
+        ctx.fillText('y', p.sx + 12, p.sy + 10);
+      }
+
+      ctx.restore();
+    };
+
+    const drawSymAxis = (c) => {
+      const x0 = -c.a;
+      const { w, h, scale, xC, yC } = getTransform();
+      const xHalf = (w/2) / scale;
+      const yHalf = (h/2) / scale;
+      const xVisMin = xC - xHalf, xVisMax = xC + xHalf;
+      const yVisMin = yC - yHalf, yVisMax = yC + yHalf;
+      if (x0 < xVisMin || x0 > xVisMax) return;
+
+      const p1 = worldToScreen(x0, yVisMin);
+      const p2 = worldToScreen(x0, yVisMax);
+
+      ctx.save();
+      ctx.strokeStyle = hexToRgba(c.color, 0.45);
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6,6]);
+      ctx.beginPath();
+      ctx.moveTo(p1.sx, p1.sy);
+      ctx.lineTo(p2.sx, p2.sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    };
+
+    const drawPoint = (sx, sy, r, fill, stroke) => {
+      ctx.save();
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = stroke || 'rgba(0,0,0,.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    const drawIntercepts = (c) => {
+      ctx.save();
+      ctx.fillStyle = c.color;
+      ctx.strokeStyle = c.color;
+      ctx.lineWidth = 1.5;
+      ctx.font = '12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial';
+      ctx.textBaseline = 'middle';
+
+      const pY = worldToScreen(0, c.b);
+      drawPoint(pY.sx, pY.sy, 4, c.color, c.color);
+      ctx.fillText(`(0, ${formatNum(c.b)})`, pY.sx + 8, pY.sy);
+
+      if (Math.abs(c.k) > 1e-12){
+        const x = -c.b / c.k;
+        if (x >= c.domain.xMin - 1e-9 && x <= c.domain.xMax + 1e-9){
+          const pX = worldToScreen(x, 0);
+          drawPoint(pX.sx, pX.sy, 4, c.color, c.color);
+          ctx.fillText(`(${formatNum(x)}, 0)`, pX.sx + 8, pX.sy);
+        }
+      }
+      ctx.restore();
+    };
+
+    const drawComponentCurve = (c, isActive) => {
+      ensureDomain(c);
+      const xMin = c.domain.xMin;
+      const xMax = c.domain.xMax;
+
+      const samples = 600;
+      const dx = (xMax - xMin) / samples;
+
+      ctx.save();
+      ctx.strokeStyle = c.color;
+      ctx.lineWidth = isActive ? 3 : 2;
+      ctx.beginPath();
+
+      for (let i=0; i<=samples; i++){
+        const x = xMin + dx * i;
+        const y = evalY(c, x);
+        const p = worldToScreen(x, y);
+        if (i === 0) ctx.moveTo(p.sx, p.sy);
+        else ctx.lineTo(p.sx, p.sy);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      const yL = evalY(c, xMin);
+      const yR = evalY(c, xMax);
+      const pL = worldToScreen(xMin, yL);
+      const pR = worldToScreen(xMax, yR);
+
+      const r = isActive ? 6 : 5;
+      drawPoint(pL.sx, pL.sy, r, '#fff', c.color);
+      drawPoint(pR.sx, pR.sy, r, '#fff', c.color);
+    };
+
+    let activeId = null;
+    let drag = null;
+
+    const pxDist = (x1,y1,x2,y2) => Math.hypot(x1-x2, y1-y2);
+
+    const hitTestHandle = (c, mouseSx, mouseSy) => {
+      ensureDomain(c);
+      const xMin = c.domain.xMin, xMax = c.domain.xMax;
+      const pL = worldToScreen(xMin, evalY(c, xMin));
+      const pR = worldToScreen(xMax, evalY(c, xMax));
+      const dL = pxDist(mouseSx, mouseSy, pL.sx, pL.sy);
+      const dR = pxDist(mouseSx, mouseSy, pR.sx, pR.sy);
+      const thr = 10;
+      if (dL <= thr) return { which: 'min', dist: dL };
+      if (dR <= thr) return { which: 'max', dist: dR };
+      return null;
+    };
+
+    const hitTestCurve = (c, mouseSx, mouseSy) => {
+      const mw = screenToWorld(mouseSx, mouseSy);
+      const x = mw.x;
+      ensureDomain(c);
+      if (x < c.domain.xMin || x > c.domain.xMax) return null;
+
+      const y = evalY(c, x);
+      const p = worldToScreen(x, y);
+      const d = Math.abs(p.sy - mouseSy);
+      const thr = 8;
+      if (d <= thr) return { dist: d };
+      return null;
+    };
+
+    const bringToFront = (id) => {
+      const idx = components.findIndex(c => c.id === id);
+      if (idx >= 0 && idx !== components.length - 1){
+        const [c] = components.splice(idx, 1);
+        components.push(c);
+      }
+    };
+
+    const setActive = (id) => {
+      activeId = id;
+      bringToFront(id);
+      requestDraw();
+    };
+
+    const syncUIFromModel = (c) => {
+      const ui = uiMap.get(c.id);
+      if (!ui) return;
+      ui.updateExpr?.();
+      if (c.type === TYPE_V && ui.syncA) ui.syncA(c.a);
+      if (c.type === TYPE_L){
+        if (ui.syncK) ui.syncK(c.k);
+        if (ui.syncB) ui.syncB(c.b);
+      }
+      if (ui.syncXMin) ui.syncXMin(c.domain.xMin);
+      if (ui.syncXMax) ui.syncXMax(c.domain.xMax);
+      if (ui.visBtn) ui.visBtn.textContent = c.visible ? '隐藏' : '显示';
+    };
+
+    const startDrag = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+
+      for (let i = components.length - 1; i >= 0; i--){
+        const c = components[i];
+        if (!c.visible) continue;
+
+        const hh = hitTestHandle(c, sx, sy);
+        if (hh){
+          setActive(c.id);
+          drag = { mode: 'handle', id: c.id, which: hh.which };
+          canvas.setPointerCapture(e.pointerId);
+          return;
+        }
+
+        const hc = hitTestCurve(c, sx, sy);
+        if (hc){
+          setActive(c.id);
+          const startW = screenToWorld(sx, sy);
+          drag = {
+            mode: 'curve',
+            id: c.id,
+            startW,
+            startDomain: { xMin: c.domain.xMin, xMax: c.domain.xMax },
+            startParams: c.type === TYPE_V ? { a: c.a } : { k: c.k, b: c.b }
+          };
+          canvas.setPointerCapture(e.pointerId);
+          return;
+        }
+      }
+
+      activeId = null;
+      requestDraw();
+    };
+
+    const moveDrag = (e) => {
+      if (!drag) return;
+
+      const c = components.find(x => x.id === drag.id);
+      if (!c) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+      const curW = screenToWorld(sx, sy);
+
+      if (drag.mode === 'handle'){
+        let x = snap(curW.x);
+        x = clamp(x, DOMAIN_MIN, DOMAIN_MAX);
+
+        if (drag.which === 'min') c.domain.xMin = x;
+        else c.domain.xMax = x;
+
+        if (c.domain.xMin > c.domain.xMax){
+          const tmp = c.domain.xMin;
+          c.domain.xMin = c.domain.xMax;
+          c.domain.xMax = tmp;
+          drag.which = (drag.which === 'min') ? 'max' : 'min';
+        }
+
+        if (c.domain.xMax - c.domain.xMin < EPS){
+          if (drag.which === 'min') c.domain.xMin = c.domain.xMax - EPS;
+          else c.domain.xMax = c.domain.xMin + EPS;
+        }
+
+        ensureDomain(c);
+        syncUIFromModel(c);
+        requestDraw();
+        return;
+      }
+
+      if (drag.mode === 'curve'){
+        const dx = snap(curW.x - drag.startW.x);
+        const dy = snap(curW.y - drag.startW.y);
+
+        const width = drag.startDomain.xMax - drag.startDomain.xMin;
+        let newMin = drag.startDomain.xMin + dx;
+        let newMax = drag.startDomain.xMax + dx;
+
+        if (newMin < DOMAIN_MIN){ newMin = DOMAIN_MIN; newMax = DOMAIN_MIN + width; }
+        if (newMax > DOMAIN_MAX){ newMax = DOMAIN_MAX; newMin = DOMAIN_MAX - width; }
+
+        c.domain.xMin = newMin;
+        c.domain.xMax = newMax;
+
+        if (c.type === TYPE_V){
+          c.a = clamp(drag.startParams.a - dx, -10, 10);
+        } else {
+          const k = c.k;
+          c.b = clamp(drag.startParams.b + dy - k * dx, -10, 10);
+        }
+
+        ensureDomain(c);
+        syncUIFromModel(c);
+        requestDraw();
+      }
+    };
+
+    const endDrag = (e) => {
+      if (!drag) return;
+      drag = null;
+      try{ canvas.releasePointerCapture(e.pointerId); }catch(_){}
+    };
+
+    const updateCursor = (e) => {
+      if (drag) return;
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+
+      for (let i = components.length - 1; i >= 0; i--){
+        const c = components[i];
+        if (!c.visible) continue;
+        const hh = hitTestHandle(c, sx, sy);
+        if (hh){ canvas.style.cursor = 'ew-resize'; return; }
+        const hc = hitTestCurve(c, sx, sy);
+        if (hc){ canvas.style.cursor = (c.type === TYPE_V) ? 'ew-resize' : 'move'; return; }
+      }
+      canvas.style.cursor = 'default';
+    };
+
+    canvas.addEventListener('pointerdown', startDrag);
+    canvas.addEventListener('pointermove', (e) => { updateCursor(e); moveDrag(e); });
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('pointerleave', () => { if (!drag) canvas.style.cursor = 'default'; });
+
+    const drawMainGrid = drawGrid;
+    const drawMainAxes = drawAxes;
+
+    function draw(){
+      const { w, h } = getTransform();
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0,0,w,h);
+
+      if (gridToggle.checked) drawMainGrid();
+      if (showAxes) drawMainAxes();
+
+      const act = activeId ? components.find(c => c.id === activeId) : null;
+
+      components.forEach(c => {
+        if (!c.visible) return;
+        if (act && c.id === act.id) return;
+        if (c.type === TYPE_V && c.showAxis) drawSymAxis(c);
+        drawComponentCurve(c, false);
+        if (c.type === TYPE_L && c.showIntercepts) drawIntercepts(c);
+      });
+
+      if (act && act.visible){
+        if (act.type === TYPE_V && act.showAxis) drawSymAxis(act);
+        drawComponentCurve(act, true);
+        if (act.type === TYPE_L && act.showIntercepts) drawIntercepts(act);
+      }
     }
 
-    btnUp1.addEventListener('click', ()=>{ toggleCurve(btnUp1, curveUp1, lgUp1); updateEq(); });
-    btnDn1.addEventListener('click', ()=>{ toggleCurve(btnDn1, curveDn1, lgDn1); updateEq(); });
-
-    btnB.addEventListener('click', ()=>{
-      const on = !curveB.classList.contains('hide');
-      if(on){
-        curveB.classList.add('hide'); lgB.classList.add('hide'); setOnOff(btnB,false); bPanel.classList.add('hide');
-      }else{
-        curveB.classList.remove('hide'); lgB.classList.remove('hide'); setOnOff(btnB,true); bPanel.classList.remove('hide');
-        curveB.setAttribute('d', pathFromFunc(x => Math.abs(x+1) + parseFloat(bEl.value), win));
-      }
-      updateEq();
+    addVBtn.addEventListener('click', () => {
+      const c = defaultComponent(TYPE_V);
+      components.push(c);
+      cardsEl.appendChild(buildCard(c));
+      updateEmptyTip();
+      updateStatuses();
+      setActive(c.id);
+      requestDraw();
     });
 
-    bEl.addEventListener('input', ()=>{
-      const b = parseFloat(bEl.value);
-      bVal.textContent = fmt(b);
-      if(!curveB.classList.contains('hide')){
-        curveB.setAttribute('d', pathFromFunc(x => Math.abs(x+1) + b, win));
-      }
-      updateEq();
+    addLBtn.addEventListener('click', () => {
+      const c = defaultComponent(TYPE_L);
+      components.push(c);
+      cardsEl.appendChild(buildCard(c));
+      updateEmptyTip();
+      updateStatuses();
+      setActive(c.id);
+      requestDraw();
     });
 
-    resetBtn.addEventListener('click', ()=>{
-      curveUp1.classList.add('hide'); lgUp1.classList.add('hide'); setOnOff(btnUp1,false);
-      curveDn1.classList.add('hide'); lgDn1.classList.add('hide'); setOnOff(btnDn1,false);
-      curveB.classList.add('hide');   lgB.classList.add('hide');   setOnOff(btnB,false);
-      bPanel.classList.add('hide');
-
-      bEl.value = 0; bVal.textContent = "0";
-      curveB.setAttribute('d', pathFromFunc(x => Math.abs(x+1), win));
-      updateEq();
+    clearAllBtn.addEventListener('click', () => {
+      components = [];
+      vCount = 0;
+      lCount = 0;
+      colorIndex = 0;
+      compSeq = 1;
+      activeId = null;
+      fullRenderCards();
+      requestDraw();
     });
 
-    updateEq();
-  })();
-
-  // ---------------------------
-  // Activity 4 (k,a,b) : use A1
-  // ---------------------------
-  (function initAct4(){
-    const win = A1;
-
-    const gridLayer = document.getElementById('act4_gridLayer');
-    const axisLayer = document.getElementById('act4_axisLayer');
-    const labelLayer = document.getElementById('act4_labelLayer');
-
-    const curve = document.getElementById('act4_curve');
-    const eqInfo = document.getElementById('act4_eqInfo');
-
-    const kEl = document.getElementById('act4_k');
-    const aEl = document.getElementById('act4_a');
-    const bEl = document.getElementById('act4_b');
-
-    const kVal = document.getElementById('act4_kVal');
-    const aVal = document.getElementById('act4_aVal');
-    const bVal = document.getElementById('act4_bVal');
-
-    const resetBtn = document.getElementById('act4_reset');
-
-    drawGridAxes(gridLayer, axisLayer, win);
-    drawAxisLabels(labelLayer, win);
-
-    function eqString(k,a,b){
-      const inside = (a>=0) ? `x+${fmt(a)}` : `x${fmt(a)}`;
-      const bPart = (b>=0) ? `+${fmt(b)}` : `${fmt(b)}`;
-      return `y = ${fmt(k)}|${inside}| ${bPart}`;
-    }
-
-    function render(){
-      const k = parseFloat(kEl.value);
-      const a = parseFloat(aEl.value);
-      const b = parseFloat(bEl.value);
-
-      kVal.textContent = fmt(k);
-      aVal.textContent = fmt(a);
-      bVal.textContent = fmt(b);
-
-      eqInfo.textContent = eqString(k,a,b);
-
-      curve.setAttribute('d', pathFromFunc(x => k*Math.abs(x + a) + b, win));
-    }
-
-    [kEl,aEl,bEl].forEach(el => el.addEventListener('input', render));
-
-    resetBtn.addEventListener('click', ()=>{
-      kEl.value = 1; aEl.value = 0; bEl.value = 0;
-      render();
+    resetViewBtn.addEventListener('click', () => {
+      view = { ...viewDefault };
+      setViewText();
+      requestDraw();
     });
 
-    render();
-  })();
+    gridToggle.addEventListener('change', () => requestDraw());
 
-})();
+    toggleAxesBtn.addEventListener('click', () => {
+      showAxes = !showAxes;
+      toggleAxesBtn.textContent = showAxes ? '隐藏坐标系' : '显示坐标系';
+      requestDraw();
+    });
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
+    window.addEventListener('resize', resize);
+
+    setViewText();
+    fullRenderCards();
+    requestAnimationFrame(() => resize());
+
+    return { resize, draw: requestDraw };
+  }
+
+  a1Api = initActivity1();
+  a2Api = initActivity2();
+
+  setActiveTab(1);
+});
 </script>
-
 </body>
 </html>
